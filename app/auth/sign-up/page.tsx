@@ -26,18 +26,25 @@ export default function SignUpPage() {
       return
     }
 
+    if (password.length < 6) {
+      setError('A palavra-passe deve ter pelo menos 6 caracteres')
+      return
+    }
+
     setLoading(true)
 
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signUp({
+      
+      // Sign up without email confirmation since it's disabled
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
-            `${window.location.origin}/auth/callback`,
-        },
+          data: {
+            email: email,
+          }
+        }
       })
 
       if (error) {
@@ -45,6 +52,26 @@ export default function SignUpPage() {
         return
       }
 
+      // If user is created (email verification disabled), auto sign in
+      if (data.user) {
+        // Try to sign in immediately
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        })
+
+        if (signInError) {
+          // If auto sign-in fails, redirect to login
+          router.push('/auth/login')
+          return
+        }
+
+        // Redirect to admin
+        router.push('/admin')
+        return
+      }
+
+      // If no user returned but no error, email verification might be required
       router.push('/auth/sign-up-success')
     } catch (err) {
       setError('Ocorreu um erro inesperado')
