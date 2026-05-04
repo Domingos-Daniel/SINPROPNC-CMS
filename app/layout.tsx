@@ -14,21 +14,8 @@ export const metadata: Metadata = {
   title: 'SINPROPNC - Sindicato Provincial do Pessoal Navegante de Cabine',
   description: 'Sindicato Provincial do Pessoal Navegante de Cabine da Aviação Civil de Angola',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
 }
 
