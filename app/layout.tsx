@@ -1,0 +1,86 @@
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
+import { headers } from 'next/headers'
+import { HeaderClient, DEFAULT_MENU_ITEMS, DEFAULT_CONTACT_INFO } from '@/components/Header'
+import { Footer } from '@/components/Footer'
+import { createClient } from '@/lib/supabase/server'
+import './globals.css'
+
+const _geist = Geist({ subsets: ["latin"] });
+const _geistMono = Geist_Mono({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: 'SINPROPNC - Sindicato Provincial do Pessoal Navegante de Cabine',
+  description: 'Sindicato Provincial do Pessoal Navegante de Cabine da Aviação Civil de Angola',
+  icons: {
+    icon: [
+      {
+        url: '/icon-light-32x32.png',
+        media: '(prefers-color-scheme: light)',
+      },
+      {
+        url: '/icon-dark-32x32.png',
+        media: '(prefers-color-scheme: dark)',
+      },
+      {
+        url: '/icon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    apple: '/apple-icon.png',
+  },
+}
+
+export const dynamic = 'force-dynamic'
+
+async function getHeaderData() {
+  try {
+    const supabase = await createClient()
+    
+    const [menuRes, contactRes] = await Promise.all([
+      supabase.from('menu_items').select('*').eq('is_active', true).order('display_order', { ascending: true }),
+      supabase.from('contact_info').select('*').eq('is_active', true).order('display_order', { ascending: true }),
+    ])
+
+    return {
+      menuItems: menuRes.data || [],
+      contactInfo: contactRes.data || [],
+    }
+  } catch (error) {
+    console.error('Error fetching header data:', error)
+    return {
+      menuItems: [],
+      contactInfo: [],
+    }
+  }
+}
+
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  const headersList = await headers()
+  const pathname = headersList.get('x-invoke-path') || ''
+  
+  // Don't render header on admin routes
+  const isAdminRoute = pathname.startsWith('/admin')
+  
+  const { menuItems, contactInfo } = await getHeaderData()
+
+  return (
+    <html lang="pt-PT">
+      <body className="font-sans antialiased bg-white">
+        {!isAdminRoute && (
+          <HeaderClient menuItems={menuItems} contactInfo={contactInfo} />
+        )}
+        <main className="min-h-screen">
+          {children}
+        </main>
+        {!isAdminRoute && <Footer />}
+        {process.env.NODE_ENV === 'production' && <Analytics />}
+      </body>
+    </html>
+  )
+}
