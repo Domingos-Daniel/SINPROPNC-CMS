@@ -144,11 +144,12 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-neutral-700 hover:bg-neutral-100 rounded transition animate-slide-down"
+            className="lg:hidden flex items-center gap-1 p-2 text-neutral-700 hover:bg-neutral-100 rounded transition animate-slide-down"
             style={{ animationDelay: '0.5s' }}
             aria-label="Menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <span className="text-xs font-medium">Menu</span>
           </button>
         </div>
 
