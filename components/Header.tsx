@@ -101,19 +101,19 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
         <div className={`max-w-6xl mx-auto px-6 py-4 flex items-center justify-between transition-all duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group animate-slide-down">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-700 to-blue-800 rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:shadow-lg group-hover:from-blue-600 group-hover:to-blue-700 transition">
-              <Plane className="w-6 h-6" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-700 to-blue-800 rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:shadow-lg group-hover:from-blue-600 group-hover:to-blue-700 transition">
+              <Plane className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div className="hidden sm:block">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-blue-700 leading-tight">SINPROPNC</h1>
+            <div>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <h1 className="text-sm sm:text-base font-bold text-blue-700 leading-tight">SINPROPNC</h1>
                 <img 
                   src="/BANDEIRA-ANGOLA.png" 
                   alt="Angola" 
-                  className="h-5 w-auto opacity-80" 
+                  className="h-3.5 sm:h-5 w-auto opacity-80" 
                 />
               </div>
-              <p className="text-xs text-neutral-600 font-medium">Pessoal Navegante de Cabine</p>
+              <p className="text-[10px] sm:text-xs text-neutral-600 font-medium hidden sm:block">Pessoal Navegante de Cabine</p>
             </div>
           </Link>
 
