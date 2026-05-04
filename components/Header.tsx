@@ -110,7 +110,7 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
                 <img 
                   src="/BANDEIRA-ANGOLA.png" 
                   alt="Angola" 
-                  className="h-4 w-auto opacity-80" 
+                  className="h-5 w-auto opacity-80" 
                 />
               </div>
               <p className="text-xs text-neutral-600 font-medium">Pessoal Navegante de Cabine</p>
