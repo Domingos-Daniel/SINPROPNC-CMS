@@ -51,21 +51,21 @@ export default async function RootLayout({
   const headersList = await headers()
   const pathname = headersList.get('x-invoke-path') || ''
   
-  // Don't render header on admin routes
-  const isAdminRoute = pathname.startsWith('/admin')
+  // Don't render header on admin and auth routes
+  const isSpecialRoute = pathname.startsWith('/admin') || pathname.startsWith('/auth')
   
   const { menuItems, contactInfo } = await getHeaderData()
 
   return (
     <html lang="pt-PT">
       <body className="font-sans antialiased bg-white">
-        {!isAdminRoute && (
+        {!isSpecialRoute && (
           <HeaderClient menuItems={menuItems} contactInfo={contactInfo} />
         )}
         <main className="min-h-screen">
           {children}
         </main>
-        {!isAdminRoute && <Footer />}
+        {!isSpecialRoute && <Footer />}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

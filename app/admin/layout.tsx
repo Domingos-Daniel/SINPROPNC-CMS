@@ -114,9 +114,8 @@ export default function AdminLayout({
   }
 
   return (
-    <html lang="pt-PT">
-      <body className="font-sans antialiased bg-slate-50">
-        <div className="min-h-screen bg-slate-50">
+    <>
+    <div className="min-h-screen bg-slate-50">
           {/* Mobile Header */}
           <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-40 flex items-center px-4">
             <Button 
@@ -256,7 +255,6 @@ export default function AdminLayout({
           </main>
         </div>
         {process.env.NODE_ENV === 'production' && <Analytics />}
-      </body>
-    </html>
+    </>
   )
 }
