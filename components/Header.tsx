@@ -72,24 +72,24 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
   return (
     <>
       {/* Top Contact Bar */}
-      <div className={`bg-blue-700 text-white text-xs py-3.5 hidden md:block border-b border-blue-600 transition-all duration-300 ${isScrolled ? 'opacity-0 h-0' : 'opacity-100'}`}>
-        <div className="max-w-6xl mx-auto px-6 flex justify-between items-center overflow-hidden">
-          <div className="flex gap-8">
-            <a href={`tel:${phone.replace(/\s/g, '')}`} className="flex items-center gap-2 hover:opacity-90 transition animate-fade-in">
-              <Phone className="w-4 h-4" />
-              <span>{phone} (WhatsApp)</span>
+      <div className={`bg-blue-700 text-white text-xs py-2 md:py-3.5 border-b border-blue-600 transition-all duration-300 ${isScrolled ? 'opacity-0 h-0' : 'opacity-100'}`}>
+        <div className="max-w-6xl mx-auto px-4 md:px-6 flex justify-between items-center overflow-hidden">
+          <div className="flex gap-4 md:gap-8 items-center">
+            <a href={`tel:${phone.replace(/\s/g, '')}`} className="flex items-center gap-1 md:gap-2 hover:opacity-90 transition animate-fade-in">
+              <Phone className="w-3 h-3 md:w-4 md:h-4" />
+              <span className="text-[10px] md:text-xs">{phone}</span>
             </a>
-            <a href={`mailto:${email}`} className="flex items-center gap-2 hover:opacity-90 transition animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <a href={`mailto:${email}`} className="hidden sm:flex items-center gap-2 hover:opacity-90 transition animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <Mail className="w-4 h-4" />
               <span>{email}</span>
             </a>
           </div>
-          <div className="flex gap-8 items-center">
-            <span className="flex items-center gap-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="flex gap-4 md:gap-8 items-center">
+            <span className="hidden sm:flex items-center gap-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <MapPin className="w-4 h-4" />
               <span>{location}</span>
             </span>
-            <Link href="/area-associado" className="font-semibold hover:opacity-90 transition border-l border-blue-500 pl-8 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <Link href="/area-associado" className="font-semibold hover:opacity-90 transition border-l border-blue-500 pl-4 md:pl-8 animate-fade-in text-[10px] md:text-xs" style={{ animationDelay: '0.3s' }}>
               ÁREA DO ASSOCIADO
             </Link>
           </div>
