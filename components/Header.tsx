@@ -46,6 +46,12 @@ const DEFAULT_CONTACT_INFO: ContactInfoType[] = [
 
 function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
   const pathname = usePathname()
+  
+  // Don't show header on admin/auth routes
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/auth')) {
+    return null
+  }
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
