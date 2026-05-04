@@ -1,9 +1,17 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Plane, Phone, Mail, MapPin, Facebook, Linkedin, Twitter } from 'lucide-react'
 
 export function Footer() {
+  const pathname = usePathname()
+  
+  // Don't show footer on admin/auth routes
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/auth')) {
+    return null
+  }
+  
   const currentYear = new Date().getFullYear()
 
   return (
