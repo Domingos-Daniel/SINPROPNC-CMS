@@ -8,8 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import { Spinner } from '@/components/ui/spinner'
 import Link from 'next/link'
 import { Loader } from '@/components/Loader'
+import { slugify } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface Post {
   id: string
@@ -23,13 +26,15 @@ interface Post {
 export default function PostsManager() {
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
     excerpt: '',
     content: '',
-    is_published: false,
+    is_published: true,
   })
 
   useEffect(() => {
@@ -53,8 +58,27 @@ export default function PostsManager() {
     setLoading(false)
   }
 
+  const handleTitleChange = (title: string) => {
+    setFormData({
+      ...formData,
+      title,
+      slug: slugManuallyEdited ? formData.slug : slugify(title),
+    })
+  }
+
+  const handleSlugChange = (slug: string) => {
+    setSlugManuallyEdited(true)
+    setFormData({ ...formData, slug })
+  }
+
+  const handleResetSlug = () => {
+    setSlugManuallyEdited(false)
+    setFormData({ ...formData, slug: slugify(formData.title) })
+  }
+
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     const supabase = createClient()
 
     const { error } = await supabase.from('posts').insert([
@@ -70,17 +94,22 @@ export default function PostsManager() {
 
     if (error) {
       console.error('Error creating post:', error)
+      toast.error('Erro ao criar publicação: ' + error.message)
+      setSaving(false)
       return
     }
 
+    toast.success('Publicação criada com sucesso!')
     setFormData({
       title: '',
       slug: '',
       excerpt: '',
       content: '',
-      is_published: false,
+      is_published: true,
     })
+    setSlugManuallyEdited(false)
     setShowForm(false)
+    setSaving(false)
     fetchPosts()
   }
 
@@ -91,10 +120,11 @@ export default function PostsManager() {
     const { error } = await supabase.from('posts').delete().eq('id', id)
 
     if (error) {
-      console.error('Error deleting post:', error)
+      toast.error('Erro ao eliminar: ' + error.message)
       return
     }
 
+    toast.success('Publicação eliminada!')
     fetchPosts()
   }
 
@@ -109,7 +139,7 @@ export default function PostsManager() {
           <h1 className="text-3xl font-bold text-gray-900">Publicações</h1>
           <p className="text-gray-600 mt-2">Gerir notícias e publicações</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button onClick={() => { setShowForm(!showForm); setSlugManuallyEdited(false) }}>
           {showForm ? 'Cancelar' : 'Nova Publicação'}
         </Button>
       </div>
@@ -126,20 +156,36 @@ export default function PostsManager() {
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) => handleTitleChange(e.target.value)}
                   placeholder="Título da Publicação"
                   required
                 />
               </div>
               <div>
                 <Label htmlFor="slug">Slug (URL)</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  slug-da-publicacao
-                  required
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                    placeholder="slug-da-publicacao"
+                    required
+                    className={slugManuallyEdited ? '' : 'bg-muted border-dashed'}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleResetSlug}
+                    title="Re-gerar slug a partir do título"
+                    disabled={!formData.title}
+                  >
+                    ↻
+                  </Button>
+                </div>
+                {!slugManuallyEdited && (
+                  <p className="text-xs text-muted-foreground mt-1">Gerado automaticamente a partir do título</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="excerpt">Excerto</Label>
@@ -169,8 +215,9 @@ export default function PostsManager() {
                 />
                 <Label>Publicar imediatamente</Label>
               </div>
-              <Button type="submit" className="w-full">
-                Criar Publicação
+              <Button type="submit" className="w-full" disabled={saving}>
+                {saving && <Spinner className="mr-2" />}
+                {saving ? 'A criar...' : 'Criar Publicação'}
               </Button>
             </form>
           </CardContent>

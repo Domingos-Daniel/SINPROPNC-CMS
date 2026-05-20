@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
 import Link from 'next/link'
 import { Loader } from '@/components/Loader'
+import { slugify } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface Page {
   id: string
@@ -21,7 +24,9 @@ interface Page {
 export default function PagesManager() {
   const [pages, setPages] = useState<Page[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [formData, setFormData] = useState({ title: '', slug: '', description: '' })
 
   useEffect(() => {
@@ -45,8 +50,27 @@ export default function PagesManager() {
     setLoading(false)
   }
 
+  const handleTitleChange = (title: string) => {
+    setFormData({
+      ...formData,
+      title,
+      slug: slugManuallyEdited ? formData.slug : slugify(title),
+    })
+  }
+
+  const handleSlugChange = (slug: string) => {
+    setSlugManuallyEdited(true)
+    setFormData({ ...formData, slug })
+  }
+
+  const handleResetSlug = () => {
+    setSlugManuallyEdited(false)
+    setFormData({ ...formData, slug: slugify(formData.title) })
+  }
+
   const handleCreatePage = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     const supabase = createClient()
 
     const { error } = await supabase.from('pages').insert([
@@ -60,11 +84,16 @@ export default function PagesManager() {
 
     if (error) {
       console.error('Error creating page:', error)
+      toast.error('Erro ao criar página: ' + error.message)
+      setSaving(false)
       return
     }
 
+    toast.success('Página criada com sucesso!')
     setFormData({ title: '', slug: '', description: '' })
+    setSlugManuallyEdited(false)
     setShowForm(false)
+    setSaving(false)
     fetchPages()
   }
 
@@ -75,10 +104,11 @@ export default function PagesManager() {
     const { error } = await supabase.from('pages').delete().eq('id', id)
 
     if (error) {
-      console.error('Error deleting page:', error)
+      toast.error('Erro ao eliminar: ' + error.message)
       return
     }
 
+    toast.success('Página eliminada!')
     fetchPages()
   }
 
@@ -93,7 +123,7 @@ export default function PagesManager() {
           <h1 className="text-3xl font-bold text-gray-900">Páginas</h1>
           <p className="text-gray-600 mt-2">Gerir as páginas do site</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button onClick={() => { setShowForm(!showForm); setSlugManuallyEdited(false) }}>
           {showForm ? 'Cancelar' : 'Nova Página'}
         </Button>
       </div>
@@ -110,20 +140,36 @@ export default function PagesManager() {
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) => handleTitleChange(e.target.value)}
                   placeholder="Título da Página"
                   required
                 />
               </div>
               <div>
                 <Label htmlFor="slug">Slug (URL)</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  placeholder="slug-da-pagina"
-                  required
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                    placeholder="slug-da-pagina"
+                    required
+                    className={slugManuallyEdited ? '' : 'bg-muted border-dashed'}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleResetSlug}
+                    title="Re-gerar slug a partir do título"
+                    disabled={!formData.title}
+                  >
+                    ↻
+                  </Button>
+                </div>
+                {!slugManuallyEdited && (
+                  <p className="text-xs text-muted-foreground mt-1">Gerado automaticamente a partir do título</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="description">Descrição</Label>
@@ -134,8 +180,9 @@ export default function PagesManager() {
                   placeholder="Descrição da página"
                 />
               </div>
-              <Button type="submit" className="w-full">
-                Criar Página
+              <Button type="submit" className="w-full" disabled={saving}>
+                {saving && <Spinner className="mr-2" />}
+                {saving ? 'A criar...' : 'Criar Página'}
               </Button>
             </form>
           </CardContent>

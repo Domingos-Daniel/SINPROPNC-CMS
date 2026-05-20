@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
 import { Trash2, Edit2 } from 'lucide-react'
 import { getAllIcons, getIcon } from '@/lib/icons'
+import { toast } from 'sonner'
 
 interface Principle {
   id: string
@@ -23,6 +25,7 @@ interface Principle {
 export default function PrinciplesManager() {
   const [principles, setPrinciples] = useState<Principle[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -38,15 +41,13 @@ export default function PrinciplesManager() {
   const fetchPrinciples = async () => {
     try {
       const supabase = createClient()
-      
-      // First try without filter to see if there's any data
+
       const { data: allData, error: allError } = await supabase
         .from('principles')
         .select('*')
-      
+
       console.log('All principles (no filter):', allData, allError)
-      
-      // Then try with filter
+
       const { data, error } = await supabase
         .from('principles')
         .select('*')
@@ -57,15 +58,14 @@ export default function PrinciplesManager() {
 
       if (error) {
         console.error('Error fetching principles:', error)
-        alert('Erro ao carregar princípios: ' + error.message + '\n\nVerifique se a tabela tem dados e o RLS está configurado.')
+        toast.error('Erro ao carregar princípios: ' + error.message)
       } else if (data && data.length === 0) {
-        // Try fetching all without is_active filter
         const { data: all } = await supabase
           .from('principles')
           .select('*')
-        
+
         console.log('All principles without filter:', all)
-        
+
         if (all && all.length > 0) {
           setPrinciples(all)
         } else {
@@ -76,13 +76,14 @@ export default function PrinciplesManager() {
       }
     } catch (err: any) {
       console.error('Exception fetching principles:', err)
-      alert('Exceção: ' + err.message)
+      toast.error('Exceção: ' + err.message)
     }
     setLoading(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     const supabase = createClient()
 
     if (editingId) {
@@ -91,14 +92,16 @@ export default function PrinciplesManager() {
         description: formData.description,
         icon_name: formData.icon_name,
       }).eq('id', editingId)
-      
+
       if (error) {
-        alert('Erro ao guardar: ' + error.message)
+        toast.error('Erro ao guardar: ' + error.message)
+        setSaving(false)
         return
       }
+      toast.success('Princípio actualizado!')
     } else {
-      const maxOrder = principles.length > 0 
-        ? Math.max(...principles.map(p => p.display_order)) 
+      const maxOrder = principles.length > 0
+        ? Math.max(...principles.map(p => p.display_order))
         : 0
 
       const { error } = await supabase.from('principles').insert([{
@@ -110,13 +113,15 @@ export default function PrinciplesManager() {
       }])
 
       if (error) {
-        alert('Erro ao criar: ' + error.message)
+        toast.error('Erro ao criar: ' + error.message)
+        setSaving(false)
         return
       }
+      toast.success('Princípio criado com sucesso!')
     }
 
-    alert('Guardado com sucesso!')
     resetForm()
+    setSaving(false)
     fetchPrinciples()
   }
 
@@ -133,7 +138,13 @@ export default function PrinciplesManager() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja eliminar?')) return
     const supabase = createClient()
-    await supabase.from('principles').delete().eq('id', id)
+    const { error } = await supabase.from('principles').delete().eq('id', id)
+
+    if (error) {
+      toast.error('Erro ao eliminar: ' + error.message)
+      return
+    }
+    toast.success('Princípio eliminado!')
     fetchPrinciples()
   }
 
@@ -159,17 +170,16 @@ export default function PrinciplesManager() {
       { title: 'Defesa dos Interesses', description: 'Promove os interesses individuais e colectivos dos associados.', icon_name: 'Heart', is_active: true, display_order: 3 },
       { title: 'Participação Activa', description: 'Promove a participação de todos na actividade sindical.', icon_name: 'Users2', is_active: true, display_order: 4 },
     ]
-    
-    // First try to delete existing to avoid conflicts
+
     await supabase.from('principles').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-    
+
     const { error } = await supabase.from('principles').insert(defaults)
-    
+
     if (error) {
       console.error('Insert error:', error)
-      alert('Erro ao criar princípios: ' + error.message + '\n\nVerifique a consola para mais detalhes.')
+      toast.error('Erro ao criar princípios: ' + error.message)
     } else {
-      alert('Princípios criados com sucesso!')
+      toast.success('Princípios padrão criados com sucesso!')
       fetchPrinciples()
     }
   }
@@ -199,7 +209,7 @@ export default function PrinciplesManager() {
 
       {principles.length === 0 && !showForm && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-          <p className="text-yellow-800">Nenhum princípio encontrado. Clique em "Criar Princípios Padrão" para adicionar os princípios padrão do SINPROPNC.</p>
+          <p className="text-yellow-800">Nenhum princípio encontrado. Clique em &quot;Criar Princípios Padrão&quot; para adicionar os princípios padrão do SINPROPNC.</p>
         </div>
       )}
 
@@ -246,8 +256,9 @@ export default function PrinciplesManager() {
                 />
               </div>
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {editingId ? 'Guardar Alterações' : 'Criar Princípio'}
+                <Button type="submit" className="flex-1" disabled={saving}>
+                  {saving && <Spinner className="mr-2" />}
+                  {saving ? 'A guardar...' : editingId ? 'Guardar Alterações' : 'Criar Princípio'}
                 </Button>
                 {editingId && (
                   <Button type="button" variant="outline" onClick={resetForm}>

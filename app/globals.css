@@ -284,3 +284,26 @@
     animation-delay: calc(0.1s * (var(--index, 7) - 6));
   }
 }
+
+/* Custom scrollbar - smooth and thin */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(215 25% 35%) transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 5px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: hsl(215 25% 35%);
+  border-radius: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: hsl(215 25% 50%);
+}

@@ -10,17 +10,23 @@ interface Post {
   slug: string
   excerpt: string
   published_at: string
-  image_url?: string
 }
+
+const DEFAULT_NEWS_IMG = 'https://plus.unsplash.com/premium_photo-1707080369554-359143c6aa0b?w=800&q=80&auto=format&fit=crop'
 
 async function getPosts(): Promise<Post[]> {
   const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('posts')
-    .select('id, title, slug, excerpt, published_at, image_url')
+    .select('id, title, slug, excerpt, published_at')
     .eq('is_published', true)
     .order('published_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching posts:', error)
+    return []
+  }
 
   return data || []
 }
@@ -70,13 +76,12 @@ export default async function NoticiasPage() {
                   href={`/noticias/${post.slug}`}
                   className="group bg-white rounded-2xl border border-neutral-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
                 >
-                  {/* Image placeholder or actual image */}
-                  <div className="aspect-video bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-                    {post.image_url ? (
-                      <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-5xl">📰</span>
-                    )}
+                  <div className="aspect-video bg-blue-50 overflow-hidden">
+                    <img
+                      src={DEFAULT_NEWS_IMG}
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
                   <div className="p-8">
                     <p className="text-sm text-neutral-500 mb-3">{formatDate(post.published_at)}</p>

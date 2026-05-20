@@ -9,6 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import { Spinner } from '@/components/ui/spinner'
+import { slugify } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface PageData {
   id: string
@@ -39,17 +42,19 @@ export default function PageEditor() {
   const [sections, setSections] = useState<Section[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [sectionSaving, setSectionSaving] = useState(false)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
     description: '',
     is_published: true,
   })
-  const [newSection, setNewSection] = useState({ 
-    type: 'text', 
-    title: '', 
-    subtitle: '', 
-    content: '' 
+  const [newSection, setNewSection] = useState({
+    type: 'text',
+    title: '',
+    subtitle: '',
+    content: ''
   })
   const [editingSection, setEditingSection] = useState<string | null>(null)
 
@@ -90,6 +95,24 @@ export default function PageEditor() {
     setLoading(false)
   }
 
+  const handleTitleChange = (title: string) => {
+    setFormData({
+      ...formData,
+      title,
+      slug: slugManuallyEdited ? formData.slug : slugify(title),
+    })
+  }
+
+  const handleSlugChange = (slug: string) => {
+    setSlugManuallyEdited(true)
+    setFormData({ ...formData, slug })
+  }
+
+  const handleResetSlug = () => {
+    setSlugManuallyEdited(false)
+    setFormData({ ...formData, slug: slugify(formData.title) })
+  }
+
   const handleUpdatePage = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -108,17 +131,18 @@ export default function PageEditor() {
 
     if (error) {
       console.error('Error updating page:', error)
-      alert('Error saving page')
+      toast.error('Erro ao guardar: ' + error.message)
       setSaving(false)
       return
     }
 
-    alert('Page updated successfully!')
+    toast.success('Página actualizada com sucesso!')
     setSaving(false)
   }
 
   const handleAddSection = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSectionSaving(true)
     const supabase = createClient()
 
     const sectionContent: any = {
@@ -138,11 +162,14 @@ export default function PageEditor() {
 
     if (error) {
       console.error('Error adding section:', error)
-      alert('Error adding section: ' + error.message)
+      toast.error('Erro ao adicionar secção: ' + error.message)
+      setSectionSaving(false)
       return
     }
 
+    toast.success('Secção adicionada!')
     setNewSection({ type: 'text', title: '', subtitle: '', content: '' })
+    setSectionSaving(false)
     fetchPageData()
   }
 
@@ -156,25 +183,27 @@ export default function PageEditor() {
 
     if (error) {
       console.error('Error updating section:', error)
-      alert('Error updating section: ' + error.message)
+      toast.error('Erro ao guardar secção: ' + error.message)
       return
     }
 
+    toast.success('Secção actualizada!')
     setEditingSection(null)
     fetchPageData()
   }
 
   const handleDeleteSection = async (sectionId: string) => {
-    if (!confirm('Delete this section?')) return
+    if (!confirm('Eliminar esta secção?')) return
 
     const supabase = createClient()
     const { error } = await supabase.from('sections').delete().eq('id', sectionId)
 
     if (error) {
-      console.error('Error deleting section:', error)
+      toast.error('Erro ao eliminar: ' + error.message)
       return
     }
 
+    toast.success('Secção eliminada!')
     fetchPageData()
   }
 
@@ -192,7 +221,6 @@ export default function PageEditor() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Page Settings */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
@@ -205,16 +233,32 @@ export default function PageEditor() {
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) => handleTitleChange(e.target.value)}
                   />
                 </div>
                 <div>
                   <Label htmlFor="slug">Slug (URL)</Label>
-                  <Input
-                    id="slug"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="slug"
+                      value={formData.slug}
+                      onChange={(e) => handleSlugChange(e.target.value)}
+                      className={slugManuallyEdited ? '' : 'bg-muted border-dashed'}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={handleResetSlug}
+                      title="Re-gerar slug a partir do título"
+                      disabled={!formData.title}
+                    >
+                      ↻
+                    </Button>
+                  </div>
+                  {!slugManuallyEdited && (
+                    <p className="text-xs text-muted-foreground mt-1">Gerado automaticamente a partir do título</p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="description">Descrição</Label>
@@ -235,14 +279,14 @@ export default function PageEditor() {
                   <Label>Publicada</Label>
                 </div>
                 <Button type="submit" className="w-full" disabled={saving}>
-                  {saving ? 'Guardando...' : 'Guardar Alterações'}
+                  {saving && <Spinner className="mr-2" />}
+                  {saving ? 'A guardar...' : 'Guardar Alterações'}
                 </Button>
               </form>
             </CardContent>
           </Card>
         </div>
 
-        {/* Page Sections */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
@@ -294,14 +338,14 @@ export default function PageEditor() {
                     rows={4}
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  Adicionar Secção
+                <Button type="submit" className="w-full" disabled={sectionSaving}>
+                  {sectionSaving && <Spinner className="mr-2" />}
+                  {sectionSaving ? 'A adicionar...' : 'Adicionar Secção'}
                 </Button>
               </form>
             </CardContent>
           </Card>
 
-          {/* List of Sections */}
           {sections.map((section) => (
             <Card key={section.id}>
               <CardHeader>

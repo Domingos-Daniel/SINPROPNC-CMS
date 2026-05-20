@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
 import { Trash2, Image as ImageIcon, Edit2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface HeroSlide {
   id: string
@@ -24,6 +26,7 @@ interface HeroSlide {
 export default function HeroManager() {
   const [slides, setSlides] = useState<HeroSlide[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -54,10 +57,11 @@ export default function HeroManager() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     const supabase = createClient()
 
     if (editingId) {
-      await supabase.from('hero_slides').update({
+      const { error } = await supabase.from('hero_slides').update({
         title: formData.title,
         subtitle: formData.subtitle,
         button_text: formData.button_text,
@@ -65,12 +69,19 @@ export default function HeroManager() {
         image_url: formData.image_url || null,
         background_image_url: formData.background_image_url || null,
       }).eq('id', editingId)
+
+      if (error) {
+        toast.error('Erro ao guardar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Slide actualizado!')
     } else {
-      const maxOrder = slides.length > 0 
-        ? Math.max(...slides.map(s => s.display_order)) 
+      const maxOrder = slides.length > 0
+        ? Math.max(...slides.map(s => s.display_order))
         : 0
 
-      await supabase.from('hero_slides').insert([{
+      const { error } = await supabase.from('hero_slides').insert([{
         title: formData.title,
         subtitle: formData.subtitle,
         button_text: formData.button_text,
@@ -80,9 +91,17 @@ export default function HeroManager() {
         is_active: true,
         display_order: maxOrder + 1,
       }])
+
+      if (error) {
+        toast.error('Erro ao criar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Slide criado com sucesso!')
     }
 
     resetForm()
+    setSaving(false)
     fetchSlides()
   }
 
@@ -102,7 +121,13 @@ export default function HeroManager() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja eliminar?')) return
     const supabase = createClient()
-    await supabase.from('hero_slides').delete().eq('id', id)
+    const { error } = await supabase.from('hero_slides').delete().eq('id', id)
+
+    if (error) {
+      toast.error('Erro ao eliminar: ' + error.message)
+      return
+    }
+    toast.success('Slide eliminado!')
     fetchSlides()
   }
 
@@ -210,8 +235,9 @@ export default function HeroManager() {
                 <p className="text-xs text-gray-500 mt-1">URL da imagem ilustrativa do lado direito</p>
               </div>
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {editingId ? 'Guardar Alterações' : 'Criar Slide'}
+                <Button type="submit" className="flex-1" disabled={saving}>
+                  {saving && <Spinner className="mr-2" />}
+                  {saving ? 'A guardar...' : editingId ? 'Guardar Alterações' : 'Criar Slide'}
                 </Button>
                 {editingId && (
                   <Button type="button" variant="outline" onClick={resetForm}>

@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
 import { Trash2, Edit2 } from 'lucide-react'
 import { getAllIcons, getIcon } from '@/lib/icons'
+import { toast } from 'sonner'
 
 interface Competency {
   id: string
@@ -24,6 +26,7 @@ interface Competency {
 export default function CompetenciesManager() {
   const [competencies, setCompetencies] = useState<Competency[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('all')
@@ -53,21 +56,29 @@ export default function CompetenciesManager() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     const supabase = createClient()
 
     if (editingId) {
-      await supabase.from('competencies').update({
+      const { error } = await supabase.from('competencies').update({
         title: formData.title,
         description: formData.description,
         icon_name: formData.icon_name,
         category: formData.category,
       }).eq('id', editingId)
+
+      if (error) {
+        toast.error('Erro ao guardar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Competência actualizada!')
     } else {
-      const maxOrder = competencies.length > 0 
-        ? Math.max(...competencies.map(c => c.display_order)) 
+      const maxOrder = competencies.length > 0
+        ? Math.max(...competencies.map(c => c.display_order))
         : 0
 
-      await supabase.from('competencies').insert([{
+      const { error } = await supabase.from('competencies').insert([{
         title: formData.title,
         description: formData.description,
         icon_name: formData.icon_name,
@@ -75,9 +86,17 @@ export default function CompetenciesManager() {
         is_active: true,
         display_order: maxOrder + 1,
       }])
+
+      if (error) {
+        toast.error('Erro ao criar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Competência criada com sucesso!')
     }
 
     resetForm()
+    setSaving(false)
     fetchCompetencies()
   }
 
@@ -95,7 +114,13 @@ export default function CompetenciesManager() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja eliminar?')) return
     const supabase = createClient()
-    await supabase.from('competencies').delete().eq('id', id)
+    const { error } = await supabase.from('competencies').delete().eq('id', id)
+
+    if (error) {
+      toast.error('Erro ao eliminar: ' + error.message)
+      return
+    }
+    toast.success('Competência eliminada!')
     fetchCompetencies()
   }
 
@@ -112,8 +137,8 @@ export default function CompetenciesManager() {
   }
 
   const iconOptions = getAllIcons()
-  const filteredCompetencies = filter === 'all' 
-    ? competencies 
+  const filteredCompetencies = filter === 'all'
+    ? competencies
     : competencies.filter(c => c.category === filter)
 
   if (loading) {
@@ -132,24 +157,23 @@ export default function CompetenciesManager() {
         </Button>
       </div>
 
-      {/* Filter */}
       <div className="flex gap-2 mb-6">
-        <Button 
-          variant={filter === 'all' ? 'default' : 'outline'} 
+        <Button
+          variant={filter === 'all' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('all')}
         >
           Todas
         </Button>
-        <Button 
-          variant={filter === 'main' ? 'default' : 'outline'} 
+        <Button
+          variant={filter === 'main' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('main')}
         >
           Principais
         </Button>
-        <Button 
-          variant={filter === 'secondary' ? 'default' : 'outline'} 
+        <Button
+          variant={filter === 'secondary' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('secondary')}
         >
@@ -212,8 +236,9 @@ export default function CompetenciesManager() {
                 />
               </div>
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {editingId ? 'Guardar Alterações' : 'Criar Competência'}
+                <Button type="submit" className="flex-1" disabled={saving}>
+                  {saving && <Spinner className="mr-2" />}
+                  {saving ? 'A guardar...' : editingId ? 'Guardar Alterações' : 'Criar Competência'}
                 </Button>
                 {editingId && (
                   <Button type="button" variant="outline" onClick={resetForm}>

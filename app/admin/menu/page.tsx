@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
 import { Trash2, Edit2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface MenuItem {
   id: string
@@ -20,6 +22,7 @@ interface MenuItem {
 export default function MenuManager() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -46,27 +49,43 @@ export default function MenuManager() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     const supabase = createClient()
 
     if (editingId) {
-      await supabase.from('menu_items').update({
+      const { error } = await supabase.from('menu_items').update({
         label: formData.label,
         href: formData.href.startsWith('/') ? formData.href : `/${formData.href}`,
       }).eq('id', editingId)
+
+      if (error) {
+        toast.error('Erro ao guardar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Item do menu actualizado!')
     } else {
-      const maxOrder = menuItems.length > 0 
-        ? Math.max(...menuItems.map(m => m.display_order)) 
+      const maxOrder = menuItems.length > 0
+        ? Math.max(...menuItems.map(m => m.display_order))
         : 0
 
-      await supabase.from('menu_items').insert([{
+      const { error } = await supabase.from('menu_items').insert([{
         label: formData.label,
         href: formData.href.startsWith('/') ? formData.href : `/${formData.href}`,
         is_active: true,
         display_order: maxOrder + 1,
       }])
+
+      if (error) {
+        toast.error('Erro ao criar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Item do menu criado com sucesso!')
     }
 
     resetForm()
+    setSaving(false)
     fetchMenuItems()
   }
 
@@ -82,7 +101,13 @@ export default function MenuManager() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja eliminar?')) return
     const supabase = createClient()
-    await supabase.from('menu_items').delete().eq('id', id)
+    const { error } = await supabase.from('menu_items').delete().eq('id', id)
+
+    if (error) {
+      toast.error('Erro ao eliminar: ' + error.message)
+      return
+    }
+    toast.success('Item do menu eliminado!')
     fetchMenuItems()
   }
 
@@ -144,8 +169,9 @@ export default function MenuManager() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {editingId ? 'Guardar Alterações' : 'Criar Item'}
+                <Button type="submit" className="flex-1" disabled={saving}>
+                  {saving && <Spinner className="mr-2" />}
+                  {saving ? 'A guardar...' : editingId ? 'Guardar Alterações' : 'Criar Item'}
                 </Button>
                 {editingId && (
                   <Button type="button" variant="outline" onClick={resetForm}>

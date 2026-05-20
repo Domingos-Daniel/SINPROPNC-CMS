@@ -7,8 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
 import { Trash2, Edit2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface FAQ {
   id: string
@@ -21,6 +23,7 @@ interface FAQ {
 export default function FAQManager() {
   const [faqs, setFaqs] = useState<FAQ[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -47,27 +50,43 @@ export default function FAQManager() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     const supabase = createClient()
 
     if (editingId) {
-      await supabase.from('faqs').update({
+      const { error } = await supabase.from('faqs').update({
         question: formData.question,
         answer: formData.answer,
       }).eq('id', editingId)
+
+      if (error) {
+        toast.error('Erro ao guardar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('FAQ actualizada!')
     } else {
-      const maxOrder = faqs.length > 0 
-        ? Math.max(...faqs.map(f => f.display_order)) 
+      const maxOrder = faqs.length > 0
+        ? Math.max(...faqs.map(f => f.display_order))
         : 0
 
-      await supabase.from('faqs').insert([{
+      const { error } = await supabase.from('faqs').insert([{
         question: formData.question,
         answer: formData.answer,
         is_active: true,
         display_order: maxOrder + 1,
       }])
+
+      if (error) {
+        toast.error('Erro ao criar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('FAQ criada com sucesso!')
     }
 
     resetForm()
+    setSaving(false)
     fetchFaqs()
   }
 
@@ -83,7 +102,13 @@ export default function FAQManager() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja eliminar?')) return
     const supabase = createClient()
-    await supabase.from('faqs').delete().eq('id', id)
+    const { error } = await supabase.from('faqs').delete().eq('id', id)
+
+    if (error) {
+      toast.error('Erro ao eliminar: ' + error.message)
+      return
+    }
+    toast.success('FAQ eliminada!')
     fetchFaqs()
   }
 
@@ -144,8 +169,9 @@ export default function FAQManager() {
                 />
               </div>
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {editingId ? 'Guardar Alterações' : 'Criar FAQ'}
+                <Button type="submit" className="flex-1" disabled={saving}>
+                  {saving && <Spinner className="mr-2" />}
+                  {saving ? 'A guardar...' : editingId ? 'Guardar Alterações' : 'Criar FAQ'}
                 </Button>
                 {editingId && (
                   <Button type="button" variant="outline" onClick={resetForm}>

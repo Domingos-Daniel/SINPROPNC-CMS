@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
+import { toast } from 'sonner'
 
 export default function SettingsManager() {
   const [settings, setSettings] = useState<Record<string, any>>({})
@@ -77,11 +79,11 @@ export default function SettingsManager() {
         }
       }
 
-      alert('Configurações guardadas com sucesso!')
+      toast.success('Configurações guardadas com sucesso!')
       fetchSettings()
     } catch (error) {
       console.error('Error saving settings:', error)
-      alert('Erro ao guardar configurações')
+      toast.error('Erro ao guardar configurações')
     } finally {
       setSaving(false)
     }
@@ -211,6 +213,7 @@ export default function SettingsManager() {
 
       <div className="mt-8">
         <Button onClick={handleSaveSettings} disabled={saving} size="lg">
+          {saving && <Spinner className="mr-2" />}
           {saving ? 'A guardar...' : 'Guardar Todas as Configurações'}
         </Button>
       </div>

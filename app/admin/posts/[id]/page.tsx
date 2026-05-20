@@ -9,6 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import { Spinner } from '@/components/ui/spinner'
+import { slugify } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface PostData {
   id: string
@@ -28,6 +31,7 @@ export default function PostEditor() {
   const [post, setPost] = useState<PostData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -66,6 +70,24 @@ export default function PostEditor() {
     setLoading(false)
   }
 
+  const handleTitleChange = (title: string) => {
+    setFormData({
+      ...formData,
+      title,
+      slug: slugManuallyEdited ? formData.slug : slugify(title),
+    })
+  }
+
+  const handleSlugChange = (slug: string) => {
+    setSlugManuallyEdited(true)
+    setFormData({ ...formData, slug })
+  }
+
+  const handleResetSlug = () => {
+    setSlugManuallyEdited(false)
+    setFormData({ ...formData, slug: slugify(formData.title) })
+  }
+
   const handleUpdatePost = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -86,12 +108,12 @@ export default function PostEditor() {
 
     if (error) {
       console.error('Error updating post:', error)
-      alert('Error saving post')
+      toast.error('Erro ao guardar: ' + error.message)
       setSaving(false)
       return
     }
 
-    alert('Post updated successfully!')
+    toast.success('Publicação actualizada com sucesso!')
     setSaving(false)
   }
 
@@ -103,56 +125,72 @@ export default function PostEditor() {
     <div className="p-8">
       <div className="mb-8">
         <Button variant="outline" onClick={() => router.back()}>
-          ← Back
+          ← Voltar
         </Button>
-        <h1 className="text-3xl font-bold text-gray-900 mt-4">Edit Post</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mt-4">Editar Publicação</h1>
       </div>
 
       <div className="max-w-4xl">
         <Card>
           <CardHeader>
-            <CardTitle>Post Details</CardTitle>
+            <CardTitle>Detalhes da Publicação</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleUpdatePost} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="title">Title</Label>
+                  <Label htmlFor="title">Título</Label>
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) => handleTitleChange(e.target.value)}
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="slug">Slug</Label>
-                  <Input
-                    id="slug"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    required
-                  />
+                  <Label htmlFor="slug">Slug (URL)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="slug"
+                      value={formData.slug}
+                      onChange={(e) => handleSlugChange(e.target.value)}
+                      required
+                      className={slugManuallyEdited ? '' : 'bg-muted border-dashed'}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={handleResetSlug}
+                      title="Re-gerar slug a partir do título"
+                      disabled={!formData.title}
+                    >
+                      ↻
+                    </Button>
+                  </div>
+                  {!slugManuallyEdited && (
+                    <p className="text-xs text-muted-foreground mt-1">Gerado automaticamente a partir do título</p>
+                  )}
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="excerpt">Excerpt</Label>
+                <Label htmlFor="excerpt">Excerto</Label>
                 <Input
                   id="excerpt"
                   value={formData.excerpt}
                   onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                  placeholder="Brief description of the post"
+                  placeholder="Breve descrição da publicação"
                 />
               </div>
 
               <div>
-                <Label htmlFor="content">Content</Label>
+                <Label htmlFor="content">Conteúdo</Label>
                 <Textarea
                   id="content"
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Post content"
+                  placeholder="Conteúdo da publicação"
                   rows={12}
                   className="font-mono text-sm"
                 />
@@ -166,24 +204,24 @@ export default function PostEditor() {
                   }
                 />
                 <div>
-                  <Label className="cursor-pointer">Publish this post</Label>
+                  <Label className="cursor-pointer">Publicar esta publicação</Label>
                   <p className="text-xs text-gray-600">
-                    {formData.is_published ? 'Visible to readers' : 'Draft - not visible'}
+                    {formData.is_published ? 'Visível para leitores' : 'Rascunho - não visível'}
                   </p>
                 </div>
               </div>
 
               <Button type="submit" className="w-full" size="lg" disabled={saving}>
-                {saving ? 'Saving...' : 'Save Post'}
+                {saving && <Spinner className="mr-2" />}
+                {saving ? 'A guardar...' : 'Guardar Publicação'}
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* Preview Section */}
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>Preview</CardTitle>
+            <CardTitle>Pré-visualização</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>

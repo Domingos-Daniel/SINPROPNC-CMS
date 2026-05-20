@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
 import { Trash2, Edit2, GripVertical } from 'lucide-react'
 import { getAllIcons, getIcon } from '@/lib/icons'
+import { toast } from 'sonner'
 
 interface ServiceItem {
   id: string
@@ -22,6 +24,7 @@ interface ServiceItem {
 export default function QuickServicesManager() {
   const [services, setServices] = useState<ServiceItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -49,29 +52,45 @@ export default function QuickServicesManager() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     const supabase = createClient()
 
     if (editingId) {
-      await supabase.from('quick_services').update({
+      const { error } = await supabase.from('quick_services').update({
         title: formData.title,
         icon_name: formData.icon_name,
         link: formData.link,
       }).eq('id', editingId)
+
+      if (error) {
+        toast.error('Erro ao guardar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Serviço actualizado!')
     } else {
-      const maxOrder = services.length > 0 
-        ? Math.max(...services.map(s => s.display_order)) 
+      const maxOrder = services.length > 0
+        ? Math.max(...services.map(s => s.display_order))
         : 0
 
-      await supabase.from('quick_services').insert([{
+      const { error } = await supabase.from('quick_services').insert([{
         title: formData.title,
         icon_name: formData.icon_name,
         link: formData.link,
         is_active: true,
         display_order: maxOrder + 1,
       }])
+
+      if (error) {
+        toast.error('Erro ao criar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Serviço criado com sucesso!')
     }
 
     resetForm()
+    setSaving(false)
     fetchServices()
   }
 
@@ -88,7 +107,13 @@ export default function QuickServicesManager() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja eliminar?')) return
     const supabase = createClient()
-    await supabase.from('quick_services').delete().eq('id', id)
+    const { error } = await supabase.from('quick_services').delete().eq('id', id)
+
+    if (error) {
+      toast.error('Erro ao eliminar: ' + error.message)
+      return
+    }
+    toast.success('Serviço eliminado!')
     fetchServices()
   }
 
@@ -164,8 +189,9 @@ export default function QuickServicesManager() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {editingId ? 'Guardar Alterações' : 'Criar Serviço'}
+                <Button type="submit" className="flex-1" disabled={saving}>
+                  {saving && <Spinner className="mr-2" />}
+                  {saving ? 'A guardar...' : editingId ? 'Guardar Alterações' : 'Criar Serviço'}
                 </Button>
                 {editingId && (
                   <Button type="button" variant="outline" onClick={resetForm}>

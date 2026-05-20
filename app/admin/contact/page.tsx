@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
 import { Phone, Mail, MapPin, Clock, Trash2, Edit2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface ContactItem {
   id: string
@@ -21,6 +23,7 @@ interface ContactItem {
 export default function ContactManager() {
   const [contacts, setContacts] = useState<ContactItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -48,29 +51,45 @@ export default function ContactManager() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     const supabase = createClient()
 
     if (editingId) {
-      await supabase.from('contact_info').update({
+      const { error } = await supabase.from('contact_info').update({
         label: formData.label,
         value: formData.value,
         icon: formData.icon,
       }).eq('id', editingId)
+
+      if (error) {
+        toast.error('Erro ao guardar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Contacto actualizado!')
     } else {
-      const maxOrder = contacts.length > 0 
-        ? Math.max(...contacts.map(c => c.display_order)) 
+      const maxOrder = contacts.length > 0
+        ? Math.max(...contacts.map(c => c.display_order))
         : 0
 
-      await supabase.from('contact_info').insert([{
+      const { error } = await supabase.from('contact_info').insert([{
         label: formData.label,
         value: formData.value,
         icon: formData.icon,
         is_active: true,
         display_order: maxOrder + 1,
       }])
+
+      if (error) {
+        toast.error('Erro ao criar: ' + error.message)
+        setSaving(false)
+        return
+      }
+      toast.success('Contacto criado com sucesso!')
     }
 
     resetForm()
+    setSaving(false)
     fetchContacts()
   }
 
@@ -87,7 +106,13 @@ export default function ContactManager() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja eliminar?')) return
     const supabase = createClient()
-    await supabase.from('contact_info').delete().eq('id', id)
+    const { error } = await supabase.from('contact_info').delete().eq('id', id)
+
+    if (error) {
+      toast.error('Erro ao eliminar: ' + error.message)
+      return
+    }
+    toast.success('Contacto eliminado!')
     fetchContacts()
   }
 
@@ -169,8 +194,9 @@ export default function ContactManager() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {editingId ? 'Guardar Alterações' : 'Criar Contacto'}
+                <Button type="submit" className="flex-1" disabled={saving}>
+                  {saving && <Spinner className="mr-2" />}
+                  {saving ? 'A guardar...' : editingId ? 'Guardar Alterações' : 'Criar Contacto'}
                 </Button>
                 {editingId && (
                   <Button type="button" variant="outline" onClick={resetForm}>

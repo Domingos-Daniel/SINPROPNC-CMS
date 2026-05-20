@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Loader } from '@/components/Loader'
+import { Toaster } from '@/components/ui/sonner'
 import { Analytics } from '@vercel/analytics/next'
 import { 
   LayoutDashboard, 
@@ -165,7 +166,7 @@ export default function AdminLayout({
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 py-4 overflow-y-auto">
+            <nav className="flex-1 py-4 overflow-y-auto scrollbar-custom">
               {navGroups.map((group) => (
                 <div key={group.title} className="mb-4">
                   {sidebarOpen && (
@@ -254,6 +255,7 @@ export default function AdminLayout({
             </div>
           </main>
         </div>
+        <Toaster position="top-right" richColors />
         {process.env.NODE_ENV === 'production' && <Analytics />}
     </>
   )
