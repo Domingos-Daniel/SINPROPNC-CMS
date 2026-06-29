@@ -9,17 +9,19 @@ interface Post {
   title: string
   slug: string
   excerpt: string
+  featured_image: string | null
+  category: string | null
   published_at: string
 }
 
-const DEFAULT_NEWS_IMG = 'https://plus.unsplash.com/premium_photo-1707080369554-359143c6aa0b?w=800&q=80&auto=format&fit=crop'
+const DEFAULT_NEWS_IMG = '/android-chrome-512x512.png'
 
 async function getPosts(): Promise<Post[]> {
   const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('posts')
-    .select('id, title, slug, excerpt, published_at')
+    .select('id, title, slug, excerpt, featured_image, category, published_at')
     .eq('is_published', true)
     .order('published_at', { ascending: false })
 
@@ -46,20 +48,17 @@ export default async function NoticiasPage() {
   return (
     <div className="bg-white">
       {/* Header - Corporate Style */}
-      <section className="relative bg-gradient-to-br from-blue-800 via-blue-700 to-blue-900 text-white py-24 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -right-20 -top-20 w-96 h-96 bg-white rounded-full blur-3xl" />
-          <div className="absolute -left-20 bottom-0 w-80 h-80 bg-white rounded-full blur-3xl" />
-        </div>
+      <section className="relative bg-[linear-gradient(135deg,var(--cms-primary),#0f172a)] text-white py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:48px_48px] opacity-20" />
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="max-w-3xl">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">Notícias</h1>
-            <p className="text-xl text-blue-100 leading-relaxed font-light">
+            <p className="text-xl text-white/75 leading-relaxed font-light">
               Fique atualizado com as últimas novidades do SINPROPNC e do sector da aviação civil.
             </p>
           </div>
           <div className="mt-8 flex gap-4">
-            <div className="h-1 w-24 bg-green-500 rounded-full" />
+            <div className="h-1 w-24 bg-[var(--cms-secondary)] rounded-full" />
             <div className="h-1 w-16 bg-white/30 rounded-full" />
           </div>
         </div>
@@ -76,22 +75,27 @@ export default async function NoticiasPage() {
                   href={`/noticias/${post.slug}`}
                   className="group bg-white rounded-2xl border border-neutral-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
                 >
-                  <div className="aspect-video bg-blue-50 overflow-hidden">
+                  <div className="aspect-video bg-slate-50 overflow-hidden">
                     <img
-                      src={DEFAULT_NEWS_IMG}
+                      src={post.featured_image || DEFAULT_NEWS_IMG}
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="p-8">
-                    <p className="text-sm text-neutral-500 mb-3">{formatDate(post.published_at)}</p>
-                    <h2 className="text-xl font-bold text-neutral-900 mb-4 group-hover:text-blue-700 transition-colors line-clamp-2">
+                    <div className="flex items-center gap-2 text-sm text-neutral-500 mb-3">
+                      {post.category && (
+                        <span className="font-semibold text-[var(--cms-primary)]">{post.category}</span>
+                      )}
+                      <span>{formatDate(post.published_at)}</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-neutral-900 mb-4 group-hover:text-[var(--cms-primary)] transition-colors line-clamp-2">
                       {post.title}
                     </h2>
                     <p className="text-neutral-600 leading-relaxed mb-4 line-clamp-3">
                       {post.excerpt}
                     </p>
-                    <div className="flex items-center gap-2 text-blue-600 font-semibold group-hover:gap-3 transition-all">
+                    <div className="flex items-center gap-2 text-[var(--cms-primary)] font-semibold group-hover:gap-3 transition-all">
                       <span>Ler mais</span>
                       <ArrowRight className="w-4 h-4" />
                     </div>
@@ -118,7 +122,7 @@ export default async function NoticiasPage() {
           </p>
           <Link
             href="/juntar"
-            className="inline-flex items-center gap-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold px-8 py-4 rounded-lg transition-all hover:shadow-lg"
+            className="inline-flex items-center gap-3 bg-[var(--cms-primary)] hover:brightness-95 text-white font-semibold px-8 py-4 rounded-lg transition-all hover:shadow-lg"
           >
             Tornar-se Associado
             <ArrowRight className="w-5 h-5" />

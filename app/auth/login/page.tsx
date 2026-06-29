@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -82,10 +81,7 @@ export default function LoginPage() {
             </Button>
           </form>
           <p className="text-sm text-center text-muted-foreground mt-4">
-            Não tem uma conta?{' '}
-            <Link href="/auth/sign-up" className="text-primary hover:underline">
-              Criar conta
-            </Link>
+            O acesso ao CMS é atribuído por um administrador autorizado.
           </p>
         </CardContent>
       </Card>

@@ -59,8 +59,29 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    if (request.nextUrl.pathname.startsWith('/admin') && !user) {
-      // Protect admin routes
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      if (!user) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/auth/login'
+        return NextResponse.redirect(url)
+      }
+
+      const { data: adminUser } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('id', user.id)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (!adminUser) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/auth/login'
+        url.searchParams.set('error', 'unauthorized')
+        return NextResponse.redirect(url)
+      }
+    }
+
+    if (request.nextUrl.pathname.startsWith('/auth/sign-up')) {
       const url = request.nextUrl.clone()
       url.pathname = '/auth/login'
       return NextResponse.redirect(url)

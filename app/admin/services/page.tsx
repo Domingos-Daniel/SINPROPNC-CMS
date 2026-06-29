@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
 import { Trash2, Edit2, GripVertical } from 'lucide-react'
-import { getAllIcons, getIcon } from '@/lib/icons'
+import { getIcon } from '@/lib/icons'
+import { IconPicker } from '@/components/admin/IconPicker'
 import { toast } from 'sonner'
 
 interface ServiceItem {
@@ -96,7 +97,7 @@ export default function QuickServicesManager() {
 
   const handleEdit = (service: ServiceItem) => {
     setFormData({
-      title: service.label,
+      label: service.label,
       icon_name: service.icon_name,
       link: service.link,
     })
@@ -124,12 +125,10 @@ export default function QuickServicesManager() {
   }
 
   const resetForm = () => {
-    setFormData({ title: '', icon_name: 'Shield', link: '' })
+    setFormData({ label: '', icon_name: 'Shield', link: '' })
     setEditingId(null)
     setShowForm(false)
   }
-
-  const iconOptions = getAllIcons()
 
   if (loading) {
     return <Loader text="A carregar serviços..." />
@@ -165,18 +164,12 @@ export default function QuickServicesManager() {
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="icon_name">Ícone</Label>
-                  <select
-                    id="icon_name"
+                <div className="md:col-span-3">
+                  <Label>Ícone</Label>
+                  <IconPicker
                     value={formData.icon_name}
-                    onChange={(e) => setFormData({ ...formData, icon_name: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-md"
-                  >
-                    {iconOptions.map(icon => (
-                      <option key={icon} value={icon}>{icon}</option>
-                    ))}
-                  </select>
+                    onChange={(icon_name) => setFormData({ ...formData, icon_name })}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="link">Link</Label>

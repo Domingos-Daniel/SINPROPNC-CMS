@@ -3,8 +3,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { HeroCarousel } from '@/components/HeroCarousel'
 import { QuickAccessButton, MissionBox, PrincipalCard, CompetencyItem } from '@/components/Cards'
-import { getIcon } from '@/lib/icons'
-import { getHeroSlides, getQuickServices, getPrinciples, getCompetencies } from '@/lib/data'
+import { getHeroSlides, getQuickServices, getPrinciples, getCompetencies, getSettings, getSettingValue } from '@/lib/data'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,12 +30,12 @@ const DEFAULT_HERO_SLIDES = [
 ]
 
 const DEFAULT_QUICK_SERVICES = [
-  { id: '1', title: 'Jurídico', icon_name: 'Scale', display_order: 1 },
-  { id: '2', title: 'Acordos', icon_name: 'FileText', display_order: 2 },
-  { id: '3', title: 'Atendimento', icon_name: 'Users', display_order: 3 },
-  { id: '4', title: 'Documentos', icon_name: 'BookOpen', display_order: 4 },
-  { id: '5', title: 'Denúncia', icon_name: 'AlertTriangle', display_order: 5 },
-  { id: '6', title: 'Emergência', icon_name: 'Phone', display_order: 6 },
+  { id: '1', label: 'Jurídico', icon_name: 'Scale', link: '/servicos#juridico', display_order: 1 },
+  { id: '2', label: 'Acordos', icon_name: 'FileText', link: '/servicos#acordos', display_order: 2 },
+  { id: '3', label: 'Atendimento', icon_name: 'Users', link: '/servicos#atendimento', display_order: 3 },
+  { id: '4', label: 'Documentos', icon_name: 'BookOpen', link: '/servicos#docs', display_order: 4 },
+  { id: '5', label: 'Denúncia', icon_name: 'AlertTriangle', link: '/contacto#denuncia', display_order: 5 },
+  { id: '6', label: 'Emergência', icon_name: 'Phone', link: 'tel:+244923436908', display_order: 6 },
 ]
 
 const DEFAULT_PRINCIPLES = [
@@ -62,6 +61,7 @@ export default async function HomePage() {
     getPrinciples(),
     getCompetencies(),
   ])
+  const settings = await getSettings()
 
   const hero = heroSlides.length > 0 ? heroSlides : DEFAULT_HERO_SLIDES
   const services = quickServices.length > 0 ? quickServices : DEFAULT_QUICK_SERVICES
@@ -70,6 +70,12 @@ export default async function HomePage() {
 
   const mainCompetencies = allCompetencies.slice(0, 3)
   const secondaryCompetencies = allCompetencies.slice(3)
+  const aboutTitle = getSettingValue(settings, 'home_about_title', 'Sobre o SINPROPNC')
+  const aboutBody = getSettingValue(settings, 'home_about_body', 'O SINPROPNC é a associação sindical representativa dos Tripulantes de Cabine da Aviação Civil de Angola.')
+  const missionTitle = getSettingValue(settings, 'home_mission_title', 'A Nossa Missão')
+  const missionBody = getSettingValue(settings, 'home_mission_body', 'Ser um Sindicato livre e determinado na defesa dos trabalhadores.')
+  const ctaTitle = getSettingValue(settings, 'home_cta_title', 'Junte-se a Nós')
+  const ctaBody = getSettingValue(settings, 'home_cta_body', 'Se é Tripulante de Cabine, o SINPROPNC é a sua organização.')
 
   return (
     <div className="bg-white">
@@ -78,19 +84,27 @@ export default async function HomePage() {
 
       {/* Quick Access Section */}
       {services.length > 0 && (
-        <section className="bg-neutral-50 py-16 border-b border-neutral-200">
+        <section className="relative z-20 -mt-12 pb-14">
           <div className="max-w-6xl mx-auto px-6">
-            <h2 className="text-2xl font-bold text-neutral-900 mb-12 animate-slide-up">Acesso Rápido</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xl">
+              <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-wide text-[var(--cms-primary)]">Serviços essenciais</p>
+                  <h2 className="text-2xl font-bold text-slate-950">Acesso Rápido</h2>
+                </div>
+                <p className="max-w-lg text-sm text-slate-500">Canais diretos para apoio, documentação e atendimento sindical.</p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {services.map((service, idx) => (
                 <div key={service.id} className="stagger-item" style={{ '--index': idx + 1 } as any}>
                   <QuickAccessButton
                     iconName={service.icon_name}
-                    label={service.title}
-                    href={`/servicos#${service.id}`}
+                    label={service.label}
+                    href={service.link}
                   />
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </section>
@@ -99,25 +113,25 @@ export default async function HomePage() {
       {/* About Section */}
       <section className="py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-8 animate-slide-up">Sobre o SINPROPNC</h2>
-            <div className="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-xl p-10 border border-neutral-200 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-              <p className="text-neutral-700 mb-4 leading-relaxed">
-                <strong className="text-blue-700">O SINPROPNC</strong> é a Associação Sindical representativa dos trabalhadores que exercem a actividade profissional de <strong>Tripulante de Cabine</strong> em empresas com sede, base ou representação em território nacional.
-              </p>
-              <p className="text-neutral-700 leading-relaxed">
-                O Sindicato representa os trabalhadores que exercem a profissão de Tripulante de Cabine em empresas com sede, base ou representação em território nacional, assim como os ex-Tripulantes na situação de Pré-Reformados e Reformados.
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+            <div>
+              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--cms-primary)]">Instituição</p>
+              <h2 className="text-4xl font-bold leading-tight text-slate-950 animate-slide-up">{aboutTitle}</h2>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+              <p className="text-lg leading-relaxed text-slate-700 whitespace-pre-line">
+                {aboutBody}
               </p>
             </div>
           </div>
 
           {/* Mission Box - From CMS */}
           {allCompetencies.length > 0 && (
-            <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div className="mt-12 animate-slide-up" style={{ animationDelay: '0.2s' }}>
               <MissionBox
                 iconName="Target"
-                title="A Nossa Missão"
-                description="Ser um Sindicato livre e determinado na defesa dos trabalhadores, independentemente da sua categoria profissional ou da sua empresa."
+                title={missionTitle}
+                description={missionBody}
               />
             </div>
           )}
@@ -126,9 +140,12 @@ export default async function HomePage() {
 
       {/* Principles Section */}
       {principlesData.length > 0 && (
-        <section className="bg-neutral-50 py-20 border-b border-neutral-200">
+        <section className="bg-slate-50 py-20 border-y border-slate-200">
           <div className="max-w-6xl mx-auto px-6">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-12 animate-slide-up">Princípios do Sindicato</h2>
+            <div className="mb-12 max-w-2xl">
+              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--cms-primary)]">Base institucional</p>
+              <h2 className="text-4xl font-bold text-slate-950 animate-slide-up">Princípios do Sindicato</h2>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {principlesData.map((principle, idx) => (
                 <div key={principle.id} className="stagger-item" style={{ '--index': idx + 1 } as any}>
@@ -148,7 +165,10 @@ export default async function HomePage() {
       {mainCompetencies.length > 0 && (
         <section className="py-20">
           <div className="max-w-6xl mx-auto px-6">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-12 animate-slide-up">Competências Principais</h2>
+            <div className="mb-12 max-w-2xl">
+              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--cms-primary)]">Atuação</p>
+              <h2 className="text-4xl font-bold text-slate-950 animate-slide-up">Competências Principais</h2>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
               {mainCompetencies.map((competency, idx) => (
@@ -164,7 +184,7 @@ export default async function HomePage() {
 
             {secondaryCompetencies.length > 0 && (
               <>
-                <h3 className="text-2xl font-bold text-neutral-900 mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>Outras Competências</h3>
+                <h3 className="text-2xl font-bold text-slate-950 mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>Outras Competências</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {secondaryCompetencies.map((competency, idx) => (
                     <div key={competency.id} className="stagger-item" style={{ '--index': idx + 1 } as any}>
@@ -183,15 +203,16 @@ export default async function HomePage() {
       )}
 
       {/* Call to Action */}
-      <section className="bg-blue-700 text-white py-20 border-t border-blue-600">
+      <section className="bg-slate-950 text-white py-20">
         <div className="max-w-6xl mx-auto px-6 text-center animate-slide-up">
-          <h2 className="text-3xl font-bold mb-6">Junte-se a Nós</h2>
-          <p className="text-blue-100 mb-10 max-w-2xl mx-auto text-lg leading-relaxed font-light">
-            Se é Tripulante de Cabine, o SINPROPNC é a sua organização. Juntos somos mais fortes na defesa dos seus direitos.
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--cms-secondary)]">Filiação</p>
+          <h2 className="text-4xl font-bold mb-6">{ctaTitle}</h2>
+          <p className="text-white/70 mb-10 max-w-2xl mx-auto text-lg leading-relaxed font-light">
+            {ctaBody}
           </p>
           <Link
             href="/juntar"
-            className="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-lg transition-all hover:shadow-xl group"
+            className="inline-flex items-center gap-3 bg-[var(--cms-secondary)] hover:brightness-95 text-white font-semibold px-8 py-4 rounded-lg transition-all hover:shadow-xl group"
           >
             Tornar-me Membro
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

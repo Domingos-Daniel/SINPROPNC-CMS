@@ -9,6 +9,8 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({
     pages: 0,
     posts: 0,
+    messages: 0,
+    assets: 0,
   })
   const [loading, setLoading] = useState(true)
 
@@ -16,14 +18,18 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       const supabase = createClient()
 
-      const [pagesRes, postsRes] = await Promise.all([
+      const [pagesRes, postsRes, messagesRes, assetsRes] = await Promise.all([
         supabase.from('pages').select('id', { count: 'exact' }),
         supabase.from('posts').select('id', { count: 'exact' }),
+        supabase.from('contact_messages').select('id', { count: 'exact' }),
+        supabase.from('site_assets').select('id', { count: 'exact' }),
       ])
 
       setStats({
         pages: pagesRes.count || 0,
         posts: postsRes.count || 0,
+        messages: messagesRes.count || 0,
+        assets: assetsRes.count || 0,
       })
       setLoading(false)
     }
@@ -42,7 +48,7 @@ export default function AdminDashboard() {
         <p className="text-gray-600 mt-2">Bem-vindo ao painel de gestão do SINPROPNC</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Páginas</CardTitle>
@@ -50,6 +56,26 @@ export default function AdminDashboard() {
           <CardContent>
             <p className="text-4xl font-bold text-blue-600">{stats.pages}</p>
             <p className="text-sm text-gray-600 mt-2">Total de páginas criadas</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Mensagens</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-4xl font-bold text-blue-600">{stats.messages}</p>
+            <p className="text-sm text-gray-600 mt-2">Pedidos recebidos</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Media</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-4xl font-bold text-blue-600">{stats.assets}</p>
+            <p className="text-sm text-gray-600 mt-2">Ficheiros carregados</p>
           </CardContent>
         </Card>
 
@@ -78,6 +104,14 @@ export default function AdminDashboard() {
           <a href="/admin/settings" className="p-4 border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
             <h3 className="font-semibold text-gray-900">Configurações</h3>
             <p className="text-sm text-gray-600">Personalizar o site</p>
+          </a>
+          <a href="/admin/messages" className="p-4 border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+            <h3 className="font-semibold text-gray-900">Mensagens</h3>
+            <p className="text-sm text-gray-600">Acompanhar contactos recebidos</p>
+          </a>
+          <a href="/admin/media" className="p-4 border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+            <h3 className="font-semibold text-gray-900">Media</h3>
+            <p className="text-sm text-gray-600">Carregar imagens e documentos</p>
           </a>
         </div>
       </div>

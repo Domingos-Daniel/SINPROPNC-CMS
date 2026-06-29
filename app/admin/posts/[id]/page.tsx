@@ -19,6 +19,11 @@ interface PostData {
   title: string
   excerpt: string
   content: string
+  featured_image: string | null
+  category: string | null
+  tags: string[] | null
+  seo_title: string | null
+  meta_description: string | null
   is_published: boolean
   published_at: string | null
 }
@@ -35,6 +40,11 @@ export default function PostEditor() {
     title: '',
     excerpt: '',
     content: '',
+    featured_image: '',
+    category: 'Geral',
+    tags: '',
+    seo_title: '',
+    meta_description: '',
     is_published: false,
   })
 
@@ -60,8 +70,13 @@ export default function PostEditor() {
     setPost(data)
     setFormData({
       title: data.title,
-      excerpt: data.excerpt,
-      content: data.content,
+      excerpt: data.excerpt || '',
+      content: data.content || '',
+      featured_image: data.featured_image || '',
+      category: data.category || 'Geral',
+      tags: Array.isArray(data.tags) ? data.tags.join(', ') : '',
+      seo_title: data.seo_title || '',
+      meta_description: data.meta_description || '',
       is_published: data.is_published,
     })
     setLoading(false)
@@ -83,7 +98,13 @@ export default function PostEditor() {
         slug: slugify(formData.title),
         excerpt: formData.excerpt,
         content: formData.content,
+        featured_image: formData.featured_image || null,
+        category: formData.category || 'Geral',
+        tags: formData.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+        seo_title: formData.seo_title || null,
+        meta_description: formData.meta_description || null,
         is_published: formData.is_published,
+        status: formData.is_published ? 'published' : 'draft',
         published_at: formData.is_published && !post?.is_published ? new Date().toISOString() : post?.published_at,
         updated_at: new Date().toISOString(),
       })
@@ -141,6 +162,37 @@ export default function PostEditor() {
                 />
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="featured_image">Imagem de Destaque</Label>
+                  <Input
+                    id="featured_image"
+                    value={formData.featured_image}
+                    onChange={(e) => setFormData({ ...formData, featured_image: e.target.value })}
+                    placeholder="https://... ou URL do media"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="category">Categoria</Label>
+                  <Input
+                    id="category"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    placeholder="Ex: Aviação Civil"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="tags">Tags</Label>
+                <Input
+                  id="tags"
+                  value={formData.tags}
+                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  placeholder="sindicato, direitos, aviação"
+                />
+              </div>
+
               <div>
                 <Label htmlFor="content">Conteúdo</Label>
                 <Textarea
@@ -151,6 +203,27 @@ export default function PostEditor() {
                   rows={12}
                   className="font-mono text-sm"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="seo_title">Título SEO</Label>
+                  <Input
+                    id="seo_title"
+                    value={formData.seo_title}
+                    onChange={(e) => setFormData({ ...formData, seo_title: e.target.value })}
+                    placeholder="Opcional"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="meta_description">Meta Descrição</Label>
+                  <Input
+                    id="meta_description"
+                    value={formData.meta_description}
+                    onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
+                    placeholder="Resumo para motores de busca"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-lg">
@@ -183,6 +256,9 @@ export default function PostEditor() {
           <CardContent className="space-y-4">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{formData.title}</h2>
+              {formData.category && (
+                <p className="text-sm text-blue-700 font-medium mt-1">{formData.category}</p>
+              )}
               {formData.excerpt && (
                 <p className="text-gray-600 mt-2">{formData.excerpt}</p>
               )}

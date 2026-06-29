@@ -18,6 +18,8 @@ import {
   HelpCircle, 
   Settings, 
   Shield,
+  Mail,
+  Image as ImageIcon,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -46,12 +48,14 @@ const navGroups = [
     items: [
       { name: 'Páginas', href: '/admin/pages', icon: FileText },
       { name: 'Publicações', href: '/admin/posts', icon: Newspaper },
+      { name: 'Media', href: '/admin/media', icon: ImageIcon },
     ]
   },
   {
     title: 'Site',
     items: [
       { name: 'Contactos', href: '/admin/contact', icon: Users },
+      { name: 'Mensagens', href: '/admin/messages', icon: Mail },
       { name: 'Menu', href: '/admin/menu', icon: MapPin },
       { name: 'FAQs', href: '/admin/faq', icon: HelpCircle },
     ]
@@ -83,6 +87,19 @@ export default function AdminLayout({
 
       if (!user) {
         router.push('/auth/login')
+        return
+      }
+
+      const { data: adminUser } = await supabase
+        .from('admin_users')
+        .select('id, role')
+        .eq('id', user.id)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (!adminUser) {
+        await supabase.auth.signOut()
+        router.push('/auth/login?error=unauthorized')
         return
       }
 
@@ -148,7 +165,7 @@ export default function AdminLayout({
             {/* Logo */}
             <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 flex-shrink-0">
               <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center w-full'}`}>
-                <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <div className="w-9 h-9 bg-[var(--cms-primary)] rounded-lg flex items-center justify-center">
                   <span className="font-bold text-sm">S</span>
                 </div>
                 {sidebarOpen && (
@@ -188,7 +205,7 @@ export default function AdminLayout({
                           className={`
                             flex items-center gap-3 rounded-lg transition-colors
                             ${isActive 
-                              ? 'bg-blue-600 text-white' 
+                              ? 'bg-[var(--cms-primary)] text-white' 
                               : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                             }
                             ${!sidebarOpen && 'justify-center px-0'}

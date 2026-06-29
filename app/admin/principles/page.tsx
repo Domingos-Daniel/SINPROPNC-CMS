@@ -10,7 +10,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
 import { Trash2, Edit2 } from 'lucide-react'
-import { getAllIcons, getIcon } from '@/lib/icons'
+import { getIcon } from '@/lib/icons'
+import { IconPicker } from '@/components/admin/IconPicker'
 import { toast } from 'sonner'
 
 interface Principle {
@@ -160,8 +161,6 @@ export default function PrinciplesManager() {
     setShowForm(false)
   }
 
-  const iconOptions = getAllIcons()
-
   const handleSeedDefaults = async () => {
     const supabase = createClient()
     const defaults = [
@@ -232,17 +231,11 @@ export default function PrinciplesManager() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="icon_name">Ícone</Label>
-                  <select
-                    id="icon_name"
+                  <Label>Ícone</Label>
+                  <IconPicker
                     value={formData.icon_name}
-                    onChange={(e) => setFormData({ ...formData, icon_name: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-md"
-                  >
-                    {iconOptions.map(icon => (
-                      <option key={icon} value={icon}>{icon}</option>
-                    ))}
-                  </select>
+                    onChange={(icon_name) => setFormData({ ...formData, icon_name })}
+                  />
                 </div>
               </div>
               <div>

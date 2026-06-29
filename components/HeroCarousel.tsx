@@ -45,15 +45,17 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
 
   if (!slides || slides.length === 0) {
     return (
-      <section className="relative w-full overflow-hidden bg-black">
-        <div className="relative h-[55vh] min-h-[400px] flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-800 to-blue-900" />
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -right-40 -top-40 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-float" />
-            <div className="absolute -left-40 bottom-0 w-80 h-80 bg-blue-600/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-          </div>
-          <div className="relative z-10 max-w-6xl mx-auto px-6">
-            <h1 className="text-4xl lg:text-5xl font-bold text-white">Bem-vindo ao SINPROPNC</h1>
+      <section className="relative w-full overflow-hidden bg-slate-950 text-white">
+        <div className="relative min-h-[560px]">
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,var(--cms-primary),#0f172a_55%,#020617)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_34%)]" />
+          <div className="relative z-10 mx-auto flex min-h-[560px] max-w-6xl items-center px-6 py-16">
+            <div className="max-w-3xl">
+              <p className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur">
+                Sindicato da Aviação Civil
+              </p>
+              <h1 className="text-4xl font-bold leading-tight md:text-6xl">Bem-vindo ao SINPROPNC</h1>
+            </div>
           </div>
         </div>
       </section>
@@ -63,9 +65,9 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
   const slide = slides[currentSlide]
 
   return (
-    <section className="relative w-full overflow-hidden bg-black">
+    <section className="relative w-full overflow-hidden bg-slate-950 text-white">
       {/* Carousel Container */}
-      <div className="relative h-[55vh] min-h-[400px] flex items-center justify-center">
+      <div className="relative min-h-[620px] flex items-center justify-center">
         {/* Background - Image or Gradient */}
         {slide.background_image_url ? (
           <div className="absolute inset-0">
@@ -76,32 +78,31 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-700/90 via-blue-800/90 to-blue-900/90" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.92),rgba(2,6,23,0.72)_48%,rgba(2,6,23,0.36))]" />
           </div>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-800 to-blue-900" />
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,var(--cms-primary),#0f172a_55%,#020617)]" />
         )}
         
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -right-40 -top-40 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-float" />
-          <div className="absolute -left-40 bottom-0 w-80 h-80 bg-blue-600/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-        </div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] bg-[size:48px_48px] opacity-30" />
 
         {/* Slide Content */}
-        <div className="relative z-10 max-w-6xl mx-auto px-6 w-full py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        <div className="relative z-10 max-w-6xl mx-auto px-6 w-full py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
             {/* Text Content */}
             <div className="space-y-6">
+              <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur">
+                Defesa, representação e apoio sindical
+              </p>
               <div className="space-y-4 overflow-hidden">
                 <h1 
-                  className="text-4xl lg:text-5xl font-bold text-white leading-tight text-balance animate-slide-in-left"
+                  className="text-4xl lg:text-6xl font-bold text-white leading-tight text-balance animate-slide-in-left"
                   key={`title-${currentSlide}`}
                 >
                   {slide.title}
                 </h1>
                 <p 
-                  className="text-base text-blue-100 leading-relaxed max-w-xl font-light animate-slide-in-left"
+                  className="text-lg text-white/80 leading-relaxed max-w-xl font-light animate-slide-in-left"
                   style={{ animationDelay: '0.2s' }}
                   key={`subtitle-${currentSlide}`}
                 >
@@ -112,7 +113,7 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
               <div className="animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
                 <Link
                   href={slide.button_link}
-                  className="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-lg transition-all hover:shadow-xl hover:gap-4 group"
+                  className="inline-flex items-center gap-3 rounded-lg bg-[var(--cms-secondary)] px-6 py-3 font-semibold text-white shadow-lg shadow-black/20 transition-all hover:brightness-95 hover:gap-4 group"
                 >
                   {slide.button_text}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -123,7 +124,7 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
             {/* Visual Element - Image or Placeholder */}
             <div className="hidden lg:flex items-center justify-center">
               {slide.image_url ? (
-                <div className="relative w-80 h-80 rounded-2xl overflow-hidden shadow-2xl animate-float">
+                <div className="relative aspect-[4/5] w-full max-w-sm overflow-hidden rounded-lg border border-white/15 shadow-2xl">
                   <Image 
                     src={slide.image_url} 
                     alt="" 
@@ -132,9 +133,14 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
                   />
                 </div>
               ) : (
-                <div className="relative w-64 h-64">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-white/5 rounded-2xl backdrop-blur-md border border-white/20 animate-float" />
-                  <div className="absolute inset-4 bg-gradient-to-t from-blue-900 to-transparent rounded-xl animate-slide-in-right" />
+                <div className="w-full max-w-sm rounded-lg border border-white/15 bg-white/10 p-8 shadow-2xl backdrop-blur">
+                  <div className="grid grid-cols-2 gap-4">
+                    {['Direitos', 'Apoio', 'União', 'Segurança'].map((item) => (
+                      <div key={item} className="rounded-md border border-white/10 bg-white/10 p-5">
+                        <p className="text-sm font-semibold text-white/80">{item}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

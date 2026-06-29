@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Loader } from '@/components/Loader'
-import { Trash2, Edit2 } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { ArrowDown, ArrowUp, Edit2, ExternalLink, GripVertical, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface MenuItem {
@@ -23,6 +24,7 @@ export default function MenuManager() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [reordering, setReordering] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -113,8 +115,41 @@ export default function MenuManager() {
 
   const handleToggle = async (id: string, currentStatus: boolean) => {
     const supabase = createClient()
-    await supabase.from('menu_items').update({ is_active: !currentStatus }).eq('id', id)
+    const { error } = await supabase.from('menu_items').update({ is_active: !currentStatus }).eq('id', id)
+    if (error) {
+      toast.error('Erro ao alterar estado: ' + error.message)
+      return
+    }
     fetchMenuItems()
+  }
+
+  const moveMenuItem = async (id: string, direction: 'up' | 'down') => {
+    const currentIndex = menuItems.findIndex((item) => item.id === id)
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= menuItems.length) return
+
+    const nextItems = [...menuItems]
+    const [moved] = nextItems.splice(currentIndex, 1)
+    nextItems.splice(targetIndex, 0, moved)
+
+    setMenuItems(nextItems.map((item, index) => ({ ...item, display_order: index })))
+    setReordering(true)
+
+    const supabase = createClient()
+    const results = await Promise.all(
+      nextItems.map((item, index) =>
+        supabase.from('menu_items').update({ display_order: index }).eq('id', item.id)
+      )
+    )
+    const error = results.find((result) => result.error)?.error
+
+    setReordering(false)
+    if (error) {
+      toast.error('Erro ao reordenar menu: ' + error.message)
+      fetchMenuItems()
+      return
+    }
+    toast.success('Ordem do menu actualizada')
   }
 
   const resetForm = () => {
@@ -129,15 +164,45 @@ export default function MenuManager() {
 
   return (
     <div className="p-8">
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Menu de Navegação</h1>
-          <p className="text-gray-600 mt-2">Gerir itens do menu de navegação</p>
+          <p className="text-gray-600 mt-2">Gerir, ordenar e pré-visualizar a navegação pública do website</p>
         </div>
         <Button onClick={() => { resetForm(); setShowForm(!showForm) }}>
-          {showForm ? 'Cancelar' : 'Novo Item'}
+          {!showForm && <Plus className="mr-2 h-4 w-4" />}
+          {showForm ? 'Cancelar' : 'Novo item'}
         </Button>
       </div>
+
+      <Card className="mb-8 overflow-hidden">
+        <CardHeader>
+          <CardTitle>Preview do Menu Público</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {menuItems.filter((item) => item.is_active).length === 0 ? (
+                <p className="text-sm text-slate-500">Nenhum item activo para mostrar no website.</p>
+              ) : (
+                menuItems
+                  .filter((item) => item.is_active)
+                  .map((item) => (
+                    <a
+                      key={item.id}
+                      href={item.href}
+                      target="_blank"
+                      className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-[var(--cms-primary)] hover:text-[var(--cms-primary)]"
+                    >
+                      {item.label}
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  ))
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {showForm && (
         <Card className="mb-8">
@@ -184,7 +249,7 @@ export default function MenuManager() {
         </Card>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {menuItems.length === 0 ? (
           <Card>
             <CardContent className="pt-8 text-center text-gray-600">
@@ -194,37 +259,37 @@ export default function MenuManager() {
         ) : (
           menuItems.map((item, idx) => (
             <Card key={item.id}>
-              <CardContent className="pt-6 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <span className="text-gray-500 font-medium">{idx + 1}</span>
+              <CardContent className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex min-w-0 items-center gap-4">
+                  <GripVertical className="h-5 w-5 flex-shrink-0 text-slate-400" />
+                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                    <span className="text-sm font-semibold text-slate-500">{idx + 1}</span>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="font-semibold text-gray-900">{item.label}</h3>
-                    <p className="text-gray-500 text-sm">{item.href}</p>
+                    <p className="truncate text-sm text-gray-500">{item.href}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={item.is_active ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleToggle(item.id, item.is_active)}
-                  >
-                    {item.is_active ? 'Ativo' : 'Inativo'}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="outline" size="icon" disabled={idx === 0 || reordering} onClick={() => moveMenuItem(item.id, 'up')}>
+                    <ArrowUp className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(item)}
-                  >
-                    <Edit2 className="w-4 h-4" />
+                  <Button variant="outline" size="icon" disabled={idx === menuItems.length - 1 || reordering} onClick={() => moveMenuItem(item.id, 'down')}>
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                  <div className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2">
+                    <Switch checked={item.is_active} onCheckedChange={() => handleToggle(item.id, item.is_active)} />
+                    <span className="text-sm text-slate-600">{item.is_active ? 'Ativo' : 'Inativo'}</span>
+                  </div>
+                  <Button variant="outline" size="icon" onClick={() => handleEdit(item)}>
+                    <Edit2 className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="destructive"
-                    size="sm"
+                    size="icon"
                     onClick={() => handleDelete(item.id)}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>

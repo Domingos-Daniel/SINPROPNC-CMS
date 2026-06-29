@@ -1,5 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 
+export function getSettingValue(settings: Record<string, any>, key: string, fallback = '') {
+  const value = settings?.[key]
+  if (value && typeof value === 'object' && 'value' in value) {
+    return String(value.value ?? fallback)
+  }
+  if (value === null || value === undefined) {
+    return fallback
+  }
+  return String(value)
+}
+
 // Helper function to safely create Supabase client
 async function getSafeClient() {
   try {
@@ -100,31 +111,31 @@ export async function getSettings() {
     const supabase = await getSafeClient()
     if (!supabase) {
       return {
-        site_name: { value: 'SIMPROPNC' },
-        site_tagline: { value: 'Content Management System' },
+        site_name: 'SINPROPNC',
+        site_tagline: 'Sindicato Provincial do Pessoal Navegante de Cabine',
       }
     }
     const { data, error } = await supabase.from('settings').select('*')
     if (error) {
       console.error('Error fetching settings:', error)
       return {
-        site_name: { value: 'SIMPROPNC' },
-        site_tagline: { value: 'Content Management System' },
+        site_name: 'SINPROPNC',
+        site_tagline: 'Sindicato Provincial do Pessoal Navegante de Cabine',
       }
     }
     const settings: Record<string, any> = {
-      site_name: { value: 'SIMPROPNC' },
-      site_tagline: { value: 'Content Management System' },
+      site_name: 'SINPROPNC',
+      site_tagline: 'Sindicato Provincial do Pessoal Navegante de Cabine',
     }
     data?.forEach((item) => {
-      settings[item.setting_key] = item.setting_value
+      settings[item.setting_key] = item.setting_value?.value ?? item.setting_value
     })
     return settings
   } catch (error) {
     console.error('Exception fetching settings:', error)
     return {
-      site_name: { value: 'SIMPROPNC' },
-      site_tagline: { value: 'Content Management System' },
+      site_name: 'SINPROPNC',
+      site_tagline: 'Sindicato Provincial do Pessoal Navegante de Cabine',
     }
   }
 }

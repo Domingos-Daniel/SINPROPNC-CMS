@@ -78,7 +78,7 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
   return (
     <>
       {/* Top Contact Bar */}
-      <div className={`bg-blue-700 text-white text-xs py-2 md:py-3.5 border-b border-blue-600 transition-all duration-300 ${isScrolled ? 'opacity-0 h-0' : 'opacity-100'}`}>
+      <div className={`bg-[var(--cms-primary)] text-white text-xs py-2 md:py-3.5 border-b border-white/10 transition-all duration-300 ${isScrolled ? 'opacity-0 h-0' : 'opacity-100'}`}>
         <div className="max-w-6xl mx-auto px-4 md:px-6 flex justify-between items-center overflow-hidden">
           <div className="flex gap-4 md:gap-8 items-center">
             <a href={`tel:${phone.replace(/\s/g, '')}`} className="flex items-center gap-1 md:gap-2 hover:opacity-90 transition animate-fade-in">
@@ -95,7 +95,7 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
               <MapPin className="w-4 h-4" />
               <span>{location}</span>
             </span>
-            <Link href="/area-associado" className="font-semibold hover:opacity-90 transition border-l border-blue-500 pl-4 md:pl-8 animate-fade-in text-[10px] md:text-xs" style={{ animationDelay: '0.3s' }}>
+            <Link href="/area-associado" className="font-semibold hover:opacity-90 transition border-l border-white/25 pl-4 md:pl-8 animate-fade-in text-[10px] md:text-xs" style={{ animationDelay: '0.3s' }}>
               ÁREA DO ASSOCIADO
             </Link>
           </div>
@@ -103,16 +103,16 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
       </div>
 
       {/* Main Navigation - sticky */}
-      <header className="sticky top-0 z-50 bg-white border-b border-neutral-200 transition-all duration-300">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 transition-all duration-300">
         <div className={`max-w-6xl mx-auto px-6 py-4 flex items-center justify-between transition-all duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group animate-slide-down">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-700 to-blue-800 rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:shadow-lg group-hover:from-blue-600 group-hover:to-blue-700 transition">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--cms-primary)] rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:shadow-lg transition">
               <Plane className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
               <div className="flex items-center gap-1 sm:gap-2">
-                <h1 className="text-sm sm:text-base font-bold text-blue-700 leading-tight">SINPROPNC</h1>
+                <h1 className="text-sm sm:text-base font-bold text-[var(--cms-primary)] leading-tight">SINPROPNC</h1>
                 <img 
                   src="/BANDEIRA-ANGOLA.png" 
                   alt="Angola" 
@@ -131,17 +131,17 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
                 href={item.href}
                 className={`px-4 py-3 text-sm font-medium transition-colors rounded relative group animate-slide-down ${
                   pathname === item.href 
-                    ? 'text-blue-700 bg-blue-50' 
-                    : 'text-neutral-700 hover:text-blue-700 hover:bg-neutral-50'
+                    ? 'text-[var(--cms-primary)] bg-slate-100' 
+                    : 'text-neutral-700 hover:text-[var(--cms-primary)] hover:bg-neutral-50'
                 }`}
                 style={{ animationDelay: `${0.1 + idx * 0.05}s` }}
               >
                 {item.label}
                 {pathname !== item.href && (
-                  <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-blue-700 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                  <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-[var(--cms-primary)] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                 )}
                 {pathname === item.href && (
-                  <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-blue-700 transform scale-x-100 transition-transform" />
+                  <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-[var(--cms-primary)] transform scale-x-100 transition-transform" />
                 )}
               </Link>
             ))}
@@ -168,8 +168,8 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
                 href={item.href}
                 className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition stagger-item ${
                   pathname === item.href 
-                    ? 'bg-blue-50 text-blue-700' 
-                    : 'text-neutral-700 hover:bg-blue-50 hover:text-blue-700'
+                    ? 'bg-slate-100 text-[var(--cms-primary)]' 
+                    : 'text-neutral-700 hover:bg-slate-100 hover:text-[var(--cms-primary)]'
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -178,7 +178,7 @@ function HeaderClient({ menuItems, contactInfo }: HeaderClientProps) {
             ))}
             <Link
               href="/juntar"
-              className="block w-full bg-blue-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-800 transition text-center text-sm mt-4 stagger-item"
+              className="block w-full bg-[var(--cms-primary)] text-white px-4 py-3 rounded-lg font-semibold hover:brightness-95 transition text-center text-sm mt-4 stagger-item"
             >
               JUNTE-SE A NÓS
             </Link>

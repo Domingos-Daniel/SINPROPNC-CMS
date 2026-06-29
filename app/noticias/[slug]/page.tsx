@@ -12,6 +12,11 @@ interface Post {
   slug: string
   excerpt: string
   content: string
+  featured_image: string | null
+  category: string | null
+  tags: string[] | null
+  seo_title: string | null
+  meta_description: string | null
   published_at: string
 }
 
@@ -54,7 +59,7 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
         <div className="max-w-6xl mx-auto px-6 text-center py-20">
           <div className="text-6xl mb-6">📰</div>
           <h1 className="text-3xl font-bold text-neutral-900 mb-4">Notícia não encontrada</h1>
-          <Link href="/noticias" className="text-blue-600 hover:text-blue-700 font-semibold">
+          <Link href="/noticias" className="text-[var(--cms-primary)] hover:text-[var(--cms-primary)] font-semibold">
             Voltar às notícias
           </Link>
         </div>
@@ -65,22 +70,22 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
   return (
     <div className="bg-white">
       {/* Header - Corporate Style */}
-      <section className="relative bg-gradient-to-br from-blue-800 via-blue-700 to-blue-900 text-white py-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -right-20 -top-20 w-96 h-96 bg-white rounded-full blur-3xl" />
-          <div className="absolute -left-20 bottom-0 w-80 h-80 bg-white rounded-full blur-3xl" />
-        </div>
+      <section className="relative bg-[linear-gradient(135deg,var(--cms-primary),#0f172a)] text-white py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:48px_48px] opacity-20" />
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <Link
             href="/noticias"
-            className="inline-flex items-center gap-2 text-blue-100 hover:text-white mb-6 transition-colors"
+            className="inline-flex items-center gap-2 text-white/75 hover:text-white mb-6 transition-colors"
           >
             <ChevronLeft size={20} />
             <span>Voltar às notícias</span>
           </Link>
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">{post.title}</h1>
-            <time className="text-blue-100 text-lg">
+            {post.category && (
+              <p className="text-green-200 font-semibold mb-3">{post.category}</p>
+            )}
+            <time className="text-white/75 text-lg">
               {new Date(post.published_at).toLocaleDateString('pt-PT', {
                 year: 'numeric',
                 month: 'long',
@@ -89,7 +94,7 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
             </time>
           </div>
           <div className="mt-8 flex gap-4">
-            <div className="h-1 w-24 bg-green-500 rounded-full" />
+            <div className="h-1 w-24 bg-[var(--cms-secondary)] rounded-full" />
             <div className="h-1 w-16 bg-white/30 rounded-full" />
           </div>
         </div>
@@ -99,8 +104,15 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <article className="max-w-3xl mx-auto">
+            {post.featured_image && (
+              <img
+                src={post.featured_image}
+                alt={post.title}
+                className="w-full aspect-video object-cover rounded-xl border border-neutral-200 mb-10"
+              />
+            )}
             {post.excerpt && (
-              <p className="text-xl text-neutral-700 font-semibold mb-10 italic leading-relaxed border-l-4 border-blue-600 pl-6">
+              <p className="text-xl text-neutral-700 font-semibold mb-10 italic leading-relaxed border-l-4 border-[var(--cms-primary)] pl-6">
                 {post.excerpt}
               </p>
             )}
@@ -109,6 +121,15 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
                 {post.content}
               </div>
             </div>
+            {post.tags && post.tags.length > 0 && (
+              <div className="mt-10 flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <span key={tag} className="rounded-full bg-slate-50 px-3 py-1 text-sm font-medium text-[var(--cms-primary)]">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </article>
         </div>
       </section>
@@ -123,14 +144,14 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/noticias"
-              className="inline-flex items-center gap-3 bg-white border-2 border-neutral-200 hover:border-blue-600 hover:text-blue-600 text-neutral-700 font-semibold px-8 py-4 rounded-lg transition-all"
+              className="inline-flex items-center gap-3 bg-white border-2 border-neutral-200 hover:border-[var(--cms-primary)] hover:text-[var(--cms-primary)] text-neutral-700 font-semibold px-8 py-4 rounded-lg transition-all"
             >
               <ChevronLeft size={20} />
               Mais notícias
             </Link>
             <Link
               href="/juntar"
-              className="inline-flex items-center gap-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold px-8 py-4 rounded-lg transition-all hover:shadow-lg"
+              className="inline-flex items-center gap-3 bg-[var(--cms-primary)] hover:brightness-95 text-white font-semibold px-8 py-4 rounded-lg transition-all hover:shadow-lg"
             >
               Tornar-se Associado
               <ArrowRight className="w-5 h-5" />

@@ -20,6 +20,45 @@ interface ContactItem {
   display_order: number
 }
 
+function ContactIconPicker({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (value: string) => void
+}) {
+  const options = [
+    { value: 'phone', label: 'Telefone', icon: Phone },
+    { value: 'mail', label: 'Email', icon: Mail },
+    { value: 'mapPin', label: 'Localização', icon: MapPin },
+    { value: 'clock', label: 'Horário', icon: Clock },
+  ]
+
+  return (
+    <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+      {options.map((option) => {
+        const Icon = option.icon
+        const selected = value === option.value
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange(option.value)}
+            className={`flex items-center gap-3 rounded-lg border p-3 text-left transition ${
+              selected
+                ? 'border-[var(--cms-primary)] bg-[var(--cms-primary)] text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-[var(--cms-primary)] hover:bg-slate-50'
+            }`}
+          >
+            <Icon className="h-5 w-5" />
+            <span className="text-sm font-medium">{option.label}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function ContactManager() {
   const [contacts, setContacts] = useState<ContactItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -179,18 +218,12 @@ export default function ContactManager() {
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="icon">Ícone</Label>
-                  <select
-                    id="icon"
+                <div className="md:col-span-3">
+                  <Label>Ícone</Label>
+                  <ContactIconPicker
                     value={formData.icon}
-                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-md"
-                  >
-                    {iconOptions.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
+                    onChange={(icon) => setFormData({ ...formData, icon })}
+                  />
                 </div>
               </div>
               <div className="flex gap-2">

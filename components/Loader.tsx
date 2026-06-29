@@ -14,10 +14,10 @@ export function PageLoader() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-white">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-700 to-blue-800 rounded-lg flex items-center justify-center">
+        <div className="w-12 h-12 bg-[var(--cms-primary)] rounded-lg flex items-center justify-center">
           <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
         </div>
-        <span className="text-xl font-bold text-blue-700">SINPROPNC</span>
+        <span className="text-xl font-bold text-[var(--cms-primary)]">SINPROPNC</span>
       </div>
       <p className="text-neutral-400 text-sm">A carregar...</p>
     </div>

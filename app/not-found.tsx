@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+    <div className="flex flex-col min-h-screen bg-[linear-gradient(135deg,var(--cms-primary),#0f172a)] text-white">
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-6xl font-bold mb-4">404</h1>
