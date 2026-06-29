@@ -14,7 +14,7 @@ import { toast } from 'sonner'
 
 interface ServiceItem {
   id: string
-  title: string
+  label: string
   icon_name: string
   link: string
   is_active: boolean
@@ -28,7 +28,7 @@ export default function QuickServicesManager() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    title: '',
+    label: '',
     icon_name: 'Shield',
     link: '',
   })
@@ -57,7 +57,7 @@ export default function QuickServicesManager() {
 
     if (editingId) {
       const { error } = await supabase.from('quick_services').update({
-        title: formData.title,
+        label: formData.label,
         icon_name: formData.icon_name,
         link: formData.link,
       }).eq('id', editingId)
@@ -74,7 +74,7 @@ export default function QuickServicesManager() {
         : 0
 
       const { error } = await supabase.from('quick_services').insert([{
-        title: formData.title,
+        label: formData.label,
         icon_name: formData.icon_name,
         link: formData.link,
         is_active: true,
@@ -96,7 +96,7 @@ export default function QuickServicesManager() {
 
   const handleEdit = (service: ServiceItem) => {
     setFormData({
-      title: service.title,
+      title: service.label,
       icon_name: service.icon_name,
       link: service.link,
     })
@@ -156,12 +156,12 @@ export default function QuickServicesManager() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="title">Nome</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Ex: Jurídico"
+                    <Label htmlFor="label">Nome</Label>
+                    <Input
+                      id="label"
+                      value={formData.label}
+                      onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                      placeholder="Ex: Jurídico"
                     required
                   />
                 </div>
@@ -213,7 +213,7 @@ export default function QuickServicesManager() {
                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
                   <IconComponent className="w-6 h-6 text-blue-600" />
                 </div>
-                <h3 className="font-semibold text-gray-900 text-sm mb-3">{service.title}</h3>
+                <h3 className="font-semibold text-gray-900 text-sm mb-3">{service.label}</h3>
                 <div className="flex justify-center gap-1">
                   <Button
                     variant={service.is_active ? 'default' : 'outline'}
