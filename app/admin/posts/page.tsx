@@ -28,10 +28,8 @@ export default function PostsManager() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
-    slug: '',
     excerpt: '',
     content: '',
     is_published: true,
@@ -59,21 +57,7 @@ export default function PostsManager() {
   }
 
   const handleTitleChange = (title: string) => {
-    setFormData({
-      ...formData,
-      title,
-      slug: slugManuallyEdited ? formData.slug : slugify(title),
-    })
-  }
-
-  const handleSlugChange = (slug: string) => {
-    setSlugManuallyEdited(true)
-    setFormData({ ...formData, slug })
-  }
-
-  const handleResetSlug = () => {
-    setSlugManuallyEdited(false)
-    setFormData({ ...formData, slug: slugify(formData.title) })
+    setFormData({ ...formData, title })
   }
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -81,10 +65,12 @@ export default function PostsManager() {
     setSaving(true)
     const supabase = createClient()
 
+    const slug = slugify(formData.title)
+
     const { error } = await supabase.from('posts').insert([
       {
         title: formData.title,
-        slug: formData.slug,
+        slug,
         excerpt: formData.excerpt,
         content: formData.content,
         is_published: formData.is_published,
@@ -163,29 +149,13 @@ export default function PostsManager() {
               </div>
               <div>
                 <Label htmlFor="slug">Slug (URL)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="slug"
-                    value={formData.slug}
-                    onChange={(e) => handleSlugChange(e.target.value)}
-                    placeholder="slug-da-publicacao"
-                    required
-                    className={slugManuallyEdited ? '' : 'bg-muted border-dashed'}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={handleResetSlug}
-                    title="Re-gerar slug a partir do título"
-                    disabled={!formData.title}
-                  >
-                    ↻
-                  </Button>
-                </div>
-                {!slugManuallyEdited && (
-                  <p className="text-xs text-muted-foreground mt-1">Gerado automaticamente a partir do título</p>
-                )}
+                <Input
+                  id="slug"
+                  value={slugify(formData.title)}
+                  readOnly
+                  className="bg-muted"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Gerado automaticamente a partir do título</p>
               </div>
               <div>
                 <Label htmlFor="excerpt">Excerto</Label>

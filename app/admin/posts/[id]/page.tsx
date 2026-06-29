@@ -31,10 +31,8 @@ export default function PostEditor() {
   const [post, setPost] = useState<PostData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
-    slug: '',
     excerpt: '',
     content: '',
     is_published: false,
@@ -62,7 +60,6 @@ export default function PostEditor() {
     setPost(data)
     setFormData({
       title: data.title,
-      slug: data.slug,
       excerpt: data.excerpt,
       content: data.content,
       is_published: data.is_published,
@@ -71,21 +68,7 @@ export default function PostEditor() {
   }
 
   const handleTitleChange = (title: string) => {
-    setFormData({
-      ...formData,
-      title,
-      slug: slugManuallyEdited ? formData.slug : slugify(title),
-    })
-  }
-
-  const handleSlugChange = (slug: string) => {
-    setSlugManuallyEdited(true)
-    setFormData({ ...formData, slug })
-  }
-
-  const handleResetSlug = () => {
-    setSlugManuallyEdited(false)
-    setFormData({ ...formData, slug: slugify(formData.title) })
+    setFormData({ ...formData, title })
   }
 
   const handleUpdatePost = async (e: React.FormEvent) => {
@@ -97,7 +80,7 @@ export default function PostEditor() {
       .from('posts')
       .update({
         title: formData.title,
-        slug: formData.slug,
+        slug: slugify(formData.title),
         excerpt: formData.excerpt,
         content: formData.content,
         is_published: formData.is_published,
@@ -137,41 +120,15 @@ export default function PostEditor() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleUpdatePost} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="title">Título</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => handleTitleChange(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="slug">Slug (URL)</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="slug"
-                      value={formData.slug}
-                      onChange={(e) => handleSlugChange(e.target.value)}
-                      required
-                      className={slugManuallyEdited ? '' : 'bg-muted border-dashed'}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={handleResetSlug}
-                      title="Re-gerar slug a partir do título"
-                      disabled={!formData.title}
-                    >
-                      ↻
-                    </Button>
-                  </div>
-                  {!slugManuallyEdited && (
-                    <p className="text-xs text-muted-foreground mt-1">Gerado automaticamente a partir do título</p>
-                  )}
-                </div>
+              <div>
+                <Label htmlFor="title">Título</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">Slug: {slugify(formData.title) || '...'}</p>
               </div>
 
               <div>
